@@ -37,17 +37,26 @@ const InteractiveMovie = () => {
     setIsListening(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { 
+      // Make the request to the Edge Function
+      const response = await fetch(`${supabase.functions.getUrl('text-to-speech')}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
+        },
+        body: JSON.stringify({
           text: currentScene.character.dialogue,
           voiceId: currentScene.character.voiceId
-        }
+        })
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to generate speech');
+      }
 
-      // Create a blob from the audio data
-      const audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      // Get the audio data as an ArrayBuffer
+      const audioData = await response.arrayBuffer();
+      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
       if (audioRef.current) {
