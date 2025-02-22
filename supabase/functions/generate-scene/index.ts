@@ -21,28 +21,28 @@ if (!falKey) {
 
 async function generateImageFromPrompt(prompt: string, isCharacter: boolean = false) {
   try {
-    const response = await fetch("https://api.openai.com/v1/images/generations", {
+    const response = await fetch("https://fal.run/fal-ai/fast-sdxl", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${openAIApiKey}`,
+        "Authorization": `Key ${falKey}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "dall-e-3",
         prompt: isCharacter 
-          ? `professional portrait photograph of ${prompt}, photorealistic, dramatic lighting, cinema quality`
-          : `cinematic scene of ${prompt}, atmospheric and dramatic movie scene, 4k quality`,
-        n: 1,
-        size: "1024x1024",
-      }),
+          ? `professional portrait photograph of ${prompt}, photorealistic, dramatic lighting, cinema quality, 8k`
+          : `cinematic scene of ${prompt}, atmospheric and dramatic movie scene, 8k quality`,
+        height: 1024,
+        width: 1024,
+        enable_safety_checks: true
+      })
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      throw new Error(`Fal API error: ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.data[0].url;
+    return data.images[0].url;
   } catch (error) {
     console.error('Error generating image:', error);
     throw error;
@@ -99,7 +99,7 @@ Format the response as a valid JSON object with this structure:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: 'Generate the next scene of the story.' }
