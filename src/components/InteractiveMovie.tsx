@@ -81,15 +81,14 @@ const InteractiveMovie = () => {
     if (!currentScene?.character?.dialogue) return;
     
     try {
-      const session = await conversation.startSession({
+      await conversation.startSession({
         agentId: "default",
       });
-      console.log("Started session:", session);
-      
-      // Send the dialogue directly to be spoken
-      await conversation.send({
-        text: currentScene.character.dialogue,
-      });
+
+      // Use text-to-speech synthesis directly
+      const utterance = new SpeechSynthesisUtterance(currentScene.character.dialogue);
+      window.speechSynthesis.speak(utterance);
+
     } catch (error) {
       console.error("Error speaking dialogue:", error);
       toast({
