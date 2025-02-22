@@ -1,4 +1,5 @@
 
+// @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -24,20 +25,21 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
     
     console.log('Sending request to Fal API with payload:', JSON.stringify(payload));
     
-    const response = await fetch('https://api.fal.ai/text-to-image', {
+    const falResponse = await fetch('https://api.fal.ai/text-to-image', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${Deno.env.get('FAL_KEY')}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(payload),
     });
 
-    const responseText = await response.text();
+    const responseText = await falResponse.text();
     console.log('Raw Fal API response:', responseText);
 
-    if (!response.ok) {
-      throw new Error(`Fal API error (${response.status}): ${responseText}`);
+    if (!falResponse.ok) {
+      throw new Error(`Fal API error (${falResponse.status}): ${responseText}`);
     }
 
     const data = JSON.parse(responseText);
@@ -57,12 +59,12 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { genre, currentScene, lastChoice } = await req.json()
-    console.log('Received request:', { genre, currentScene, lastChoice })
+    const { genre, currentScene, lastChoice } = await req.json();
+    console.log('Received request:', { genre, currentScene, lastChoice });
     
     const prompt = `Generate the next scene for an interactive ${genre} story. Format the response as a JSON object with the following structure:
     {
@@ -79,14 +81,15 @@ serve(async (req) => {
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Create a new character for each scene, with a unique name and appearance. Ensure you return ONLY the JSON object.`
+    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Create a new character for each scene, with a unique name and appearance. Ensure you return ONLY the JSON object.`;
 
-    console.log('Sending prompt to OpenAI')
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Sending prompt to OpenAI');
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
@@ -98,68 +101,68 @@ serve(async (req) => {
           { role: 'user', content: prompt }
         ],
       }),
-    })
+    });
 
-    if (!response.ok) {
-      console.error('OpenAI API error:', await response.text())
-      throw new Error('Failed to get response from OpenAI')
+    if (!openAIResponse.ok) {
+      console.error('OpenAI API error:', await openAIResponse.text());
+      throw new Error('Failed to get response from OpenAI');
     }
 
-    const data = await response.json()
-    console.log('OpenAI response:', data)
+    const data = await openAIResponse.json();
+    console.log('OpenAI response:', data);
 
     if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response format from OpenAI')
+      throw new Error('Invalid response format from OpenAI');
     }
 
-    const sceneContent = data.choices[0].message.content
-    console.log('Scene content:', sceneContent)
+    const sceneContent = data.choices[0].message.content;
+    console.log('Scene content:', sceneContent);
 
-    let parsedScene
+    let parsedScene;
     try {
-      parsedScene = JSON.parse(sceneContent)
+      parsedScene = JSON.parse(sceneContent);
     } catch (e) {
-      console.error('Failed to parse scene content as JSON:', e)
-      throw new Error('Generated content is not valid JSON')
+      console.error('Failed to parse scene content as JSON:', e);
+      throw new Error('Generated content is not valid JSON');
     }
 
     if (!parsedScene.background || !parsedScene.character || !parsedScene.choices) {
-      throw new Error('Generated scene is missing required fields')
+      throw new Error('Generated scene is missing required fields');
     }
 
     // Generate background image based on the scene description
-    console.log('Generating background image for:', parsedScene.background)
-    const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background)
+    console.log('Generating background image for:', parsedScene.background);
+    const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background);
     
     // Update the scene with the generated image URL
-    parsedScene.background = backgroundImageUrl
+    parsedScene.background = backgroundImageUrl;
 
     // Always generate a new character image
-    console.log('Generating character image for:', parsedScene.character.name)
-    const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`
-    parsedScene.character.image = await generateImageFromPrompt(characterDescription, true)
+    console.log('Generating character image for:', parsedScene.character.name);
+    const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`;
+    parsedScene.character.image = await generateImageFromPrompt(characterDescription, true);
 
     // Ensure the character has all required fields
-    const requiredCharacterFields = ['name', 'voiceId', 'dialogue', 'image']
+    const requiredCharacterFields = ['name', 'voiceId', 'dialogue', 'image'];
     for (const field of requiredCharacterFields) {
       if (!parsedScene.character[field]) {
-        throw new Error(`Generated scene is missing character.${field}`)
+        throw new Error(`Generated scene is missing character.${field}`);
       }
     }
 
-    console.log('Successfully generated and validated scene with images')
+    console.log('Successfully generated and validated scene with images');
     return new Response(JSON.stringify({ scene: JSON.stringify(parsedScene) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
 
   } catch (error) {
-    console.error('Error in generate-scene function:', error)
+    console.error('Error in generate-scene function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
-    )
+    );
   }
-})
+});
