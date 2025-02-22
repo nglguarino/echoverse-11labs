@@ -8,28 +8,38 @@ const corsHeaders = {
 }
 
 async function generateImageFromPrompt(prompt: string, isCharacter: boolean = false): Promise<string> {
-  const response = await fetch('https://api.openai.com/v1/images/generations', {
+  const MODEL_ID = isCharacter ? 'sd-turbo' : 'sd-turbo';
+  const response = await fetch(`https://fal.run/fal-ai/${MODEL_ID}/async`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+      'Authorization': `Key ${Deno.env.get('FAL_KEY')}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: "dall-e-3",
       prompt: isCharacter 
-        ? `A professional portrait photograph of ${prompt}. Upper body shot, facing forward, similar to a video game character portrait. Photorealistic style with dramatic lighting. The character should be making direct eye contact with the viewer.`
-        : `A cinematic, high-quality scene of ${prompt}. The image should be atmospheric and dramatic, suitable for a movie scene.`,
-      n: 1,
-      size: "1024x1024",
+        ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
+        : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
+      negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
+      height: 1024,
+      width: 1024,
+      seed: Math.floor(Math.random() * 1000000),
+      sync_mode: true,
+      num_inference_steps: isCharacter ? 30 : 20,
     }),
   });
 
   if (!response.ok) {
+    console.error('Fal API error:', await response.text());
     throw new Error('Failed to generate image');
   }
 
   const data = await response.json();
-  return data.data[0].url;
+  
+  if (!data?.images?.[0]?.url) {
+    throw new Error('No image URL in response');
+  }
+
+  return data.images[0].url;
 }
 
 serve(async (req) => {
