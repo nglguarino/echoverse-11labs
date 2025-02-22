@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -36,6 +37,11 @@ const InteractiveMovie = () => {
     setIsListening(true);
     
     try {
+      console.log('Starting text-to-speech request with:', {
+        text: currentScene.character.dialogue,
+        voiceId: currentScene.character.voiceId
+      });
+
       const { data, error } = await supabase.functions.invoke('text-to-speech', {
         body: { 
           text: currentScene.character.dialogue,
@@ -43,14 +49,51 @@ const InteractiveMovie = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Edge Function error:', error);
+        throw error;
+      }
 
-      const audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      console.log('Received response:', {
+        dataType: typeof data,
+        dataLength: data?.length,
+        data: data // This will help us see what format the data is in
+      });
+
+      // Check if we received an ArrayBuffer or need to convert the data
+      let audioData;
+      if (data instanceof ArrayBuffer) {
+        audioData = data;
+      } else if (typeof data === 'string') {
+        // If the data is base64 encoded, decode it
+        const binaryString = atob(data);
+        audioData = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          audioData[i] = binaryString.charCodeAt(i);
+        }
+      } else {
+        console.error('Unexpected data format:', data);
+        throw new Error('Received data in unexpected format');
+      }
+
+      console.log('Creating audio blob...');
+      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
+      console.log('Setting up audio playback...');
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
+        audioRef.current.onloadedmetadata = () => {
+          console.log('Audio metadata loaded:', {
+            duration: audioRef.current?.duration,
+            readyState: audioRef.current?.readyState
+          });
+        };
+        audioRef.current.onerror = (e) => {
+          console.error('Audio element error:', e);
+        };
         await audioRef.current.play();
+        console.log('Audio playback started');
       }
 
     } catch (error) {
@@ -100,7 +143,7 @@ const InteractiveMovie = () => {
       
       setTimeout(() => {
         speakDialogue();
-      }, 1000); // Small delay to ensure the scene is properly set
+      }, 1000);
 
     } catch (error) {
       console.error('Error generating scene:', error);
