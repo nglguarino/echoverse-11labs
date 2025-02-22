@@ -1,4 +1,3 @@
-
 // @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -15,42 +14,41 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
   }
 
   console.log(`Generating ${isCharacter ? 'character' : 'background'} image with prompt:`, prompt);
-  console.log('Using Fal API key:', falKey.substring(0, 5) + '...');  // Log first 5 chars for verification
+  console.log('Using Fal API key:', falKey.substring(0, 5) + '...');
   
   try {
+    // Using their simple text-to-image endpoint
     const payload = {
-      model: "stable-diffusion-xl",  // Updated model name according to docs
       prompt: isCharacter 
         ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
         : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
       negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
       height: 1024,
       width: 1024,
-      steps: isCharacter ? 30 : 20,
     };
     
     console.log('Sending request to Fal API with payload:', JSON.stringify(payload));
     
-    const falResponse = await fetch('https://rest.fal.ai/api/v1/generation/stable-diffusion-xl', {
+    // Using their simple text-to-image endpoint
+    const falResponse = await fetch('https://110602490-fast-sdxl.fal.run', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       },
       body: JSON.stringify(payload),
     });
 
-    const responseText = await falResponse.text();
-    console.log('Raw Fal API response:', responseText);
-
     if (!falResponse.ok) {
+      const responseText = await falResponse.text();
+      console.error('Fal API error response:', responseText);
       throw new Error(`Fal API error (${falResponse.status}): ${responseText}`);
     }
 
-    const data = JSON.parse(responseText);
+    const data = await falResponse.json();
     console.log('Parsed Fal API response:', data);
     
+    // Their simple endpoint returns the image URL directly in the response
     if (!data?.images?.[0]?.url) {
       throw new Error('No image URL in response: ' + JSON.stringify(data));
     }
