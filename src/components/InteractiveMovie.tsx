@@ -5,18 +5,6 @@ import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 
-interface SceneData {
-  id: number;
-  background: string;
-  character: {
-    name: string;
-    voiceId: string;
-    dialogue: string;
-    image: string;
-  };
-  choices: string[];
-}
-
 const InteractiveMovie = () => {
   const { toast } = useToast();
   const { 
@@ -27,9 +15,12 @@ const InteractiveMovie = () => {
     isGenerating, 
     setIsGenerating,
     storyBackground,
-    setStoryBackground 
+    setStoryBackground,
+    storyCharacter,
+    setStoryCharacter
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
+  const [customChoice, setCustomChoice] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const speakDialogue = async () => {
@@ -104,7 +95,8 @@ const InteractiveMovie = () => {
           genre,
           currentScene,
           lastChoice: choice,
-          storyBackground
+          storyBackground,
+          storyCharacter
         }
       });
 
@@ -117,6 +109,25 @@ const InteractiveMovie = () => {
 
       if (!currentScene && !storyBackground) {
         setStoryBackground(newScene.background);
+      }
+
+      // Store character info on first scene
+      if (!storyCharacter) {
+        setStoryCharacter({
+          name: newScene.character.name,
+          image: newScene.character.image,
+          gender: newScene.character.gender
+        });
+      } else {
+        // Maintain character consistency
+        newScene.character = {
+          ...newScene.character,
+          name: storyCharacter.name,
+          image: storyCharacter.image,
+          gender: storyCharacter.gender,
+          // Set voice based on gender
+          voiceId: storyCharacter.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'
+        };
       }
 
       if (currentScene) {
@@ -159,6 +170,14 @@ const InteractiveMovie = () => {
 
   const handleChoice = (choice: string) => {
     generateScene(choice);
+  };
+
+  const handleCustomChoice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (customChoice.trim()) {
+      generateScene(customChoice.trim());
+      setCustomChoice("");
+    }
   };
 
   if (!currentScene) return null;
@@ -205,8 +224,8 @@ const InteractiveMovie = () => {
               <h3 className="text-xl font-semibold mb-4">{currentScene.character.name}</h3>
               <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
               
-              <div className="flex justify-end">
-                <div className="flex gap-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-4 justify-end">
                   {currentScene.choices.map((choice, index) => (
                     <button
                       key={index}
@@ -218,6 +237,24 @@ const InteractiveMovie = () => {
                     </button>
                   ))}
                 </div>
+                
+                <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
+                  <input
+                    type="text"
+                    value={customChoice}
+                    onChange={(e) => setCustomChoice(e.target.value)}
+                    placeholder="Write your own choice..."
+                    className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                    disabled={isGenerating || isListening}
+                  />
+                  <button
+                    type="submit"
+                    className="cinema-button"
+                    disabled={isGenerating || isListening || !customChoice.trim()}
+                  >
+                    Make Choice
+                  </button>
+                </form>
               </div>
             </div>
           </motion.div>

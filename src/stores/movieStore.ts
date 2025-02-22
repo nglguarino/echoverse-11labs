@@ -9,6 +9,7 @@ export interface Scene {
     voiceId: string;
     dialogue: string;
     image: string;
+    gender: 'male' | 'female';
   };
   choices: string[];
 }
@@ -19,11 +20,17 @@ interface MovieState {
   currentScene: Scene | null;
   sceneHistory: Scene[];
   storyBackground: string | null;
+  storyCharacter: {
+    name: string;
+    image: string;
+    gender: 'male' | 'female';
+  } | null;
   setGenre: (genre: string) => void;
   setIsGenerating: (isGenerating: boolean) => void;
   setCurrentScene: (scene: Scene) => void;
   addToHistory: (scene: Scene) => void;
   setStoryBackground: (background: string) => void;
+  setStoryCharacter: (character: { name: string; image: string; gender: 'male' | 'female' }) => void;
 }
 
 export const useMovieStore = create<MovieState>((set) => ({
@@ -32,6 +39,7 @@ export const useMovieStore = create<MovieState>((set) => ({
   currentScene: null,
   sceneHistory: [],
   storyBackground: null,
+  storyCharacter: null,
   setGenre: (genre) => set({ genre }),
   setIsGenerating: (isGenerating) => set({ isGenerating }),
   setCurrentScene: (scene) => set({ currentScene: scene }),
@@ -39,4 +47,5 @@ export const useMovieStore = create<MovieState>((set) => ({
     sceneHistory: [...state.sceneHistory, scene] 
   })),
   setStoryBackground: (background) => set({ storyBackground: background }),
+  setStoryCharacter: (character) => set({ storyCharacter: character }),
 }));

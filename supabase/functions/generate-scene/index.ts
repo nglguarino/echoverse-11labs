@@ -18,21 +18,19 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
   console.log(`Generating ${isCharacter ? 'character' : 'background'} image with prompt:`, prompt);
   
   try {
-    // Initialize the Fal client
     fal.config({
       credentials: falKey
     });
 
     console.log('Initialized Fal client, sending request...');
 
-    // Create the input object first so we can log it
     const input = {
       prompt: isCharacter 
         ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
         : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
       negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
       num_inference_steps: isCharacter ? 30 : 20,
-      scheduler: "DPM++ 2M",  // Using one of the explicitly permitted values
+      scheduler: "DPM++ 2M",
       seed: Math.floor(Math.random() * 1000000)
     };
 
@@ -68,17 +66,23 @@ serve(async (req) => {
   }
 
   try {
-    const { genre, currentScene, lastChoice } = await req.json();
-    console.log('Received request:', { genre, currentScene, lastChoice });
+    const { genre, currentScene, lastChoice, storyCharacter } = await req.json();
+    console.log('Received request:', { genre, currentScene, lastChoice, storyCharacter });
     
-    const prompt = `Generate the next scene for an interactive ${genre} story. Format the response as a JSON object with the following structure:
+    // Modify the prompt to maintain character consistency
+    const characterContext = storyCharacter 
+      ? `Continue the story with ${storyCharacter.name}, the same character from before. Maintain their personality and appearance.`
+      : 'Create a new character for this story.';
+    
+    const prompt = `Generate the next scene for an interactive ${genre} story. ${characterContext} Format the response as a JSON object with the following structure:
     {
       "background": "description of the scene setting",
       "character": {
-        "name": "character name",
-        "voiceId": "21m00Tcm4TlvDq8ikWAM",
+        "name": "${storyCharacter?.name || 'character name'}",
+        "voiceId": "${storyCharacter?.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'}",
         "dialogue": "character's dialogue",
-        "image": "URL for a character image"
+        "image": "${storyCharacter?.image || 'URL for a character image'}",
+        "gender": "${storyCharacter?.gender || 'male'}"
       },
       "choices": ["choice 1", "choice 2"]
     }
@@ -86,7 +90,7 @@ serve(async (req) => {
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Create a new character for each scene, with a unique name and appearance. Ensure you return ONLY the JSON object.`;
+    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Ensure you return ONLY the JSON object.`;
 
     console.log('Sending prompt to OpenAI');
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -101,7 +105,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a creative writing assistant that generates interactive story scenes. Always respond with valid JSON that matches the requested structure exactly. Create unique and diverse characters for each scene.'
+            content: 'You are a creative writing assistant that generates interactive story scenes. Always respond with valid JSON that matches the requested structure exactly. Create unique and diverse scenes while maintaining character consistency.'
           },
           { role: 'user', content: prompt }
         ],
@@ -138,21 +142,13 @@ serve(async (req) => {
     // Generate background image based on the scene description
     console.log('Generating background image for:', parsedScene.background);
     const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background);
-    
-    // Update the scene with the generated image URL
     parsedScene.background = backgroundImageUrl;
 
-    // Always generate a new character image
-    console.log('Generating character image for:', parsedScene.character.name);
-    const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`;
-    parsedScene.character.image = await generateImageFromPrompt(characterDescription, true);
-
-    // Ensure the character has all required fields
-    const requiredCharacterFields = ['name', 'voiceId', 'dialogue', 'image'];
-    for (const field of requiredCharacterFields) {
-      if (!parsedScene.character[field]) {
-        throw new Error(`Generated scene is missing character.${field}`);
-      }
+    // Only generate new character image if there's no existing character
+    if (!storyCharacter) {
+      console.log('Generating character image for:', parsedScene.character.name);
+      const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`;
+      parsedScene.character.image = await generateImageFromPrompt(characterDescription, true);
     }
 
     console.log('Successfully generated and validated scene with images');
