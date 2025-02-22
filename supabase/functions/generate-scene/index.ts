@@ -33,7 +33,7 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
           : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
         negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
         num_inference_steps: isCharacter ? 30 : 20,
-        scheduler: "K_EULER",
+        scheduler: "Euler A",  // Changed from "K_EULER" to "Euler A" which is in the permitted values
         seed: Math.floor(Math.random() * 1000000)
       }
     });
