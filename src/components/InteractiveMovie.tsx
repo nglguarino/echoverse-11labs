@@ -140,11 +140,9 @@ const InteractiveMovie = () => {
     }
   };
 
-  // Add useEffect to handle automatic speech when currentScene changes
   useEffect(() => {
     if (currentScene && !isGenerating) {
       console.log('New scene detected, starting automatic speech...');
-      // Small delay to ensure scene is fully rendered
       const timer = setTimeout(() => {
         speakDialogue();
       }, 1000);
@@ -158,10 +156,6 @@ const InteractiveMovie = () => {
       generateScene();
     }
   }, [genre]);
-
-  const handleVoiceInteraction = () => {
-    speakDialogue();
-  };
 
   const handleChoice = (choice: string) => {
     generateScene(choice);
@@ -211,15 +205,7 @@ const InteractiveMovie = () => {
               <h3 className="text-xl font-semibold mb-4">{currentScene.character.name}</h3>
               <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
               
-              <div className="flex items-center justify-between">
-                <button
-                  className={`cinema-button ${isListening ? 'bg-red-500' : ''}`}
-                  onClick={handleVoiceInteraction}
-                  disabled={isGenerating || isListening}
-                >
-                  {isListening ? 'Speaking...' : 'Speak'}
-                </button>
-                
+              <div className="flex justify-end">
                 <div className="flex gap-4">
                   {currentScene.choices.map((choice, index) => (
                     <button
