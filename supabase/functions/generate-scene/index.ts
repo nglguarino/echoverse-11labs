@@ -9,26 +9,31 @@ const corsHeaders = {
 }
 
 async function generateImageFromPrompt(prompt: string, isCharacter: boolean = false): Promise<string> {
+  const falKey = Deno.env.get('FAL_KEY');
+  if (!falKey) {
+    throw new Error('FAL_KEY environment variable is not set');
+  }
+
   console.log(`Generating ${isCharacter ? 'character' : 'background'} image with prompt:`, prompt);
+  console.log('Using Fal API key:', falKey.substring(0, 5) + '...');  // Log first 5 chars for verification
   
   try {
     const payload = {
-      model_name: 'stable-diffusion-xl-v1-0',
+      model_name: 'stable-diffusion-xl-base-1.0',  // Updated model name
       prompt: isCharacter 
         ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
         : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
       negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
       image_size: "1024x1024",
-      sync_mode: true,
       num_inference_steps: isCharacter ? 30 : 20,
     };
     
     console.log('Sending request to Fal API with payload:', JSON.stringify(payload));
     
-    const falResponse = await fetch('https://api.fal.ai/text-to-image', {
+    const falResponse = await fetch('https://api.fal.ai/v1/generation/stable-diffusion-xl-base-1.0', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${Deno.env.get('FAL_KEY')}`,
+        'Authorization': `Bearer ${falKey}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
@@ -45,12 +50,12 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
     const data = JSON.parse(responseText);
     console.log('Parsed Fal API response:', data);
     
-    if (!data?.image?.url) {
+    if (!data?.images?.[0]?.url) {
       throw new Error('No image URL in response: ' + JSON.stringify(data));
     }
 
-    console.log('Successfully generated image URL:', data.image.url);
-    return data.image.url;
+    console.log('Successfully generated image URL:', data.images[0].url);
+    return data.images[0].url;
   } catch (error) {
     console.error('Error in generateImageFromPrompt:', error);
     throw error;
