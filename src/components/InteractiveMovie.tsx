@@ -54,30 +54,18 @@ const InteractiveMovie = () => {
         throw error;
       }
 
-      console.log('Received response:', {
-        dataType: typeof data,
-        dataLength: data?.length,
-        data: data // This will help us see what format the data is in
-      });
-
-      // Check if we received an ArrayBuffer or need to convert the data
-      let audioData;
-      if (data instanceof ArrayBuffer) {
-        audioData = data;
-      } else if (typeof data === 'string') {
-        // If the data is base64 encoded, decode it
-        const binaryString = atob(data);
-        audioData = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          audioData[i] = binaryString.charCodeAt(i);
-        }
-      } else {
-        console.error('Unexpected data format:', data);
-        throw new Error('Received data in unexpected format');
+      if (!data?.data) {
+        throw new Error('No audio data received');
       }
 
       console.log('Creating audio blob...');
-      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
+      const binaryString = atob(data.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
       console.log('Setting up audio playback...');
