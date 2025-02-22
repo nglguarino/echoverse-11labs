@@ -19,21 +19,22 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
   
   try {
     const payload = {
-      model_name: 'stable-diffusion-xl-base-1.0',  // Updated model name
+      model: "stable-diffusion-xl",  // Updated model name according to docs
       prompt: isCharacter 
         ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
         : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
       negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
-      image_size: "1024x1024",
-      num_inference_steps: isCharacter ? 30 : 20,
+      height: 1024,
+      width: 1024,
+      steps: isCharacter ? 30 : 20,
     };
     
     console.log('Sending request to Fal API with payload:', JSON.stringify(payload));
     
-    const falResponse = await fetch('https://api.fal.ai/v1/generation/stable-diffusion-xl-base-1.0', {
+    const falResponse = await fetch('https://rest.fal.ai/api/v1/generation/stable-diffusion-xl', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${falKey}`,
+        'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
