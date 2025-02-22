@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -33,7 +34,13 @@ const InteractiveMovie = () => {
     setIsListening(false);
   };
 
-  if (!currentScene) return null;
+  if (!currentScene && !isGenerating) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading your story...</div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -48,29 +55,31 @@ const InteractiveMovie = () => {
         choice={undefined}
       />
 
-      <div 
-        className="relative h-full"
-        style={{
-          backgroundImage: `url(${currentScene.background})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-        
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <CharacterDialog
-            name={currentScene.character.name}
-            dialogue={currentScene.character.dialogue}
-            image={currentScene.character.image}
-            onVoiceInteraction={handleVoiceInteraction}
-            isListening={isListening}
-            choices={currentScene.choices}
-            onChoice={handleChoice}
-            isGenerating={isGenerating}
-          />
+      {currentScene && (
+        <div 
+          className="relative h-full"
+          style={{
+            backgroundImage: `url(${currentScene.background})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          
+          <div className="absolute bottom-0 left-0 right-0 p-8">
+            <CharacterDialog
+              name={currentScene.character.name}
+              dialogue={currentScene.character.dialogue}
+              image={currentScene.character.image}
+              onVoiceInteraction={handleVoiceInteraction}
+              isListening={isListening}
+              choices={currentScene.choices}
+              onChoice={handleChoice}
+              isGenerating={isGenerating}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 };
