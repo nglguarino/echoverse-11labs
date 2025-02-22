@@ -1,21 +1,14 @@
 
 import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
 
 interface GenreSelectionProps {
   onSelect: (genre: string) => void;
 }
 
 const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
-  const { toast } = useToast();
-
   const handleStart = () => {
     const genres = ['action', 'thriller', 'romance'];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
-    toast({
-      title: "Starting Journey",
-      description: `Creating your ${randomGenre} story...`,
-    });
     onSelect(randomGenre);
   };
 

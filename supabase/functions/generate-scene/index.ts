@@ -36,7 +36,7 @@ serve(async (req) => {
   }
 
   try {
-    const { genre, currentScene, lastChoice, storyBackground } = await req.json()
+    const { genre, currentScene, lastChoice } = await req.json()
     console.log('Received request:', { genre, currentScene, lastChoice })
     
     const prompt = `Generate the next scene for an interactive ${genre} story. Format the response as a JSON object with the following structure:
@@ -104,17 +104,19 @@ serve(async (req) => {
       throw new Error('Generated scene is missing required fields')
     }
 
-    // Generate background image only for the first scene
-    if (!currentScene || !storyBackground) {
-      console.log('Generating background image for:', parsedScene.background)
-      const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background)
-      parsedScene.background = backgroundImageUrl
-    }
+    // Generate background image based on the scene description
+    console.log('Generating background image for:', parsedScene.background)
+    const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background)
+    
+    // Update the scene with the generated image URL
+    parsedScene.background = backgroundImageUrl
 
-    // Generate character image
-    console.log('Generating character image for:', parsedScene.character.name)
-    const characterImagePrompt = `A cinematic portrait of ${parsedScene.character.name}, a character in a ${genre} story. The image should be dramatic and show clear facial features.`
-    parsedScene.character.image = await generateImageFromPrompt(characterImagePrompt)
+    // Generate character image if needed
+    if (!parsedScene.character.image || parsedScene.character.image.startsWith('URL')) {
+      console.log('Generating character image for:', parsedScene.character.name)
+      const characterImagePrompt = `A portrait of ${parsedScene.character.name}, a character in a ${genre} story`
+      parsedScene.character.image = await generateImageFromPrompt(characterImagePrompt)
+    }
 
     // Ensure the character has all required fields
     const requiredCharacterFields = ['name', 'voiceId', 'dialogue', 'image']
@@ -124,6 +126,7 @@ serve(async (req) => {
       }
     }
 
+    // If we get here, the scene is valid
     console.log('Successfully generated and validated scene with images')
     return new Response(JSON.stringify({ scene: JSON.stringify(parsedScene) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
