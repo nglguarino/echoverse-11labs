@@ -51,7 +51,7 @@ export default {
         cinema: {
           background: "#1A1A1A",
           text: "#FAFAFA",
-          accent: "#FFD700",
+          accent: "#9b87f5",
           muted: "#404040",
         },
       },

@@ -79,17 +79,17 @@
   .cinema-card {
     @apply bg-black/40 backdrop-blur-sm border border-white/10 rounded-lg p-6 
            transition-all duration-300 hover:border-cinema-accent/50 
-           hover:shadow-[0_0_15px_rgba(255,215,0,0.1)];
+           hover:shadow-[0_0_15px_rgba(155,135,245,0.1)];
   }
 
   .text-gradient {
-    @apply bg-gradient-to-r from-cinema-accent to-orange-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-cinema-accent to-purple-500 bg-clip-text text-transparent;
   }
 
   .cinema-button {
     @apply px-6 py-3 rounded-md bg-cinema-accent text-cinema-background
            font-medium transition-all duration-300
-           hover:bg-cinema-accent/90 hover:shadow-[0_0_15px_rgba(255,215,0,0.2)]
+           hover:bg-cinema-accent/90 hover:shadow-[0_0_15px_rgba(155,135,245,0.2)]
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 }
