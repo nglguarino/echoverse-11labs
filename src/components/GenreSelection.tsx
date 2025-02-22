@@ -16,7 +16,8 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
   return (
     <div 
       className="w-full max-w-lg mx-auto p-6 flex flex-col items-center justify-center min-h-screen
-                 bg-gradient-to-b from-cinema-background via-cinema-background/95 to-cinema-background/90"
+                 bg-gradient-to-b from-cinema-background via-cinema-background/95 to-cinema-background/90
+                 relative"
     >
       <AnimatePresence mode="wait">
         {isStarting ? (
@@ -24,16 +25,16 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-cinema-background/95"
           >
             <div className="flex flex-col items-center gap-8">
               <motion.div
-                className="w-16 h-16 border-4 border-t-primary rounded-full"
+                className="w-16 h-16 border-4 border-t-[#1EAEDB] border-r-[#9b87f5] border-b-[#1EAEDB] border-l-[#9b87f5] rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
               <motion.p 
-                className="text-lg text-cinema-text/80"
+                className="text-lg text-cinema-text font-medium"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
