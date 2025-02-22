@@ -113,19 +113,21 @@ const InteractiveMovie = () => {
 
       // Store character info on first scene
       if (!storyCharacter) {
-        setStoryCharacter({
+        const character = {
           name: newScene.character.name,
           image: newScene.character.image,
           gender: newScene.character.gender
-        });
+        };
+        setStoryCharacter(character);
+        // Set initial voice based on gender
+        newScene.character.voiceId = character.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
       } else {
-        // Maintain character consistency
+        // Maintain character consistency and ensure correct voice
         newScene.character = {
           ...newScene.character,
           name: storyCharacter.name,
           image: storyCharacter.image,
           gender: storyCharacter.gender,
-          // Set voice based on gender
           voiceId: storyCharacter.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'
         };
       }
