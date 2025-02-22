@@ -8,19 +8,19 @@ const genres = [
     id: 'action',
     title: 'Action',
     description: 'High-octane adventures with intense sequences',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5'
   },
   {
     id: 'thriller',
     title: 'Thriller',
     description: 'Suspenseful stories that keep you on the edge',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b'
   },
   {
     id: 'romance',
     title: 'Romance',
     description: 'Heart-warming tales of love and connection',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901'
   }
 ];
 
@@ -70,7 +70,7 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
           >
             <div className="aspect-video rounded-md overflow-hidden mb-4">
               <img 
-                src={genre.image} 
+                src={`${genre.image}?auto=format&fit=crop&w=800&q=80`}
                 alt={genre.title}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
