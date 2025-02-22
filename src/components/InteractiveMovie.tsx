@@ -32,8 +32,8 @@ const InteractiveMovie = () => {
   useEffect(() => {
     if (currentScene) {
       startConversation();
-      // Speak the character's dialogue
-      conversation.textToSpeech({
+      // Send message to speak the character's dialogue
+      conversation.send({
         text: currentScene.character.dialogue,
       });
     }
@@ -41,7 +41,9 @@ const InteractiveMovie = () => {
 
   const startConversation = async () => {
     try {
-      await conversation.startSession();
+      await conversation.startSession({
+        agentId: "default", // Replace with your actual agent ID once you have it
+      });
     } catch (error) {
       console.error("Error starting conversation:", error);
     }
@@ -54,9 +56,8 @@ const InteractiveMovie = () => {
   const handleVoiceInteraction = async () => {
     setIsListening(true);
     try {
-      const result = await conversation.startRecording();
-      console.log("Voice input:", result);
-      // Here you can add logic to match voice input with choices
+      conversation.startInput();
+      // Voice input handling will be managed through onMessage callback
     } catch (error) {
       console.error("Error with voice interaction:", error);
       toast({
