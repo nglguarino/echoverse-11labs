@@ -1,3 +1,4 @@
+
 // @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -24,14 +25,17 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
 
     console.log('Initialized Fal client, sending request...');
 
+    // Using the simplified input format from their docs
     const result = await fal.subscribe('110602490-fast-sdxl', {
       input: {
         prompt: isCharacter 
           ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
           : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
         negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
-        image_size: "1024x1024"
-      },
+        num_inference_steps: isCharacter ? 30 : 20,
+        scheduler: "K_EULER",
+        seed: Math.floor(Math.random() * 1000000)
+      }
     });
 
     console.log('Received response from Fal:', result);
