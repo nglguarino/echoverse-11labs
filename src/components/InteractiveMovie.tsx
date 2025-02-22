@@ -25,7 +25,7 @@ const InteractiveMovie = () => {
 
   // Initialize ElevenLabs conversation with API key from Supabase
   const conversation = useConversation({
-    apiKey: process.env.ELEVEN_LABS_API_KEY || '',
+    apiKey: import.meta.env.VITE_ELEVEN_LABS_API_KEY || '',
     overrides: {
       tts: {
         voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
