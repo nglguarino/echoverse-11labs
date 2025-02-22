@@ -22,10 +22,35 @@ const InteractiveMovie = () => {
   const { genre } = useMovieStore();
   const [currentScene, setCurrentScene] = useState<SceneData | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string>('');
+
+  // Fetch API key from Supabase on component mount
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      const { data: { ELEVEN_LABS_API_KEY }, error } = 
+        await supabase.functions.invoke('get-secret', {
+          body: { secretName: 'ELEVEN_LABS_API_KEY' }
+        });
+      
+      if (error) {
+        console.error('Error fetching API key:', error);
+        toast({
+          title: "Error",
+          description: "Could not fetch API key",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setElevenlabsApiKey(ELEVEN_LABS_API_KEY);
+    };
+
+    fetchApiKey();
+  }, []);
 
   // Initialize ElevenLabs conversation with API key from Supabase
   const conversation = useConversation({
-    apiKey: import.meta.env.VITE_ELEVEN_LABS_API_KEY || '',
+    apiKey: elevenlabsApiKey,
     overrides: {
       tts: {
         voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
@@ -56,11 +81,11 @@ const InteractiveMovie = () => {
   };
 
   useEffect(() => {
-    if (genre) {
+    if (genre && elevenlabsApiKey) {
       setCurrentScene(demoScene);
       startConversation();
     }
-  }, [genre]);
+  }, [genre, elevenlabsApiKey]);
 
   const startConversation = async () => {
     try {
