@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useConversation } from '@11labs/react';
@@ -20,12 +19,10 @@ interface SceneData {
 
 const InteractiveMovie = () => {
   const { toast } = useToast();
-  const { genre } = useMovieStore();
-  const [currentScene, setCurrentScene] = useState<SceneData | null>(null);
+  const { genre, currentScene, setCurrentScene, addToHistory, isGenerating, setIsGenerating } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string>('');
 
-  // Fetch API key from Supabase on component mount
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
@@ -50,7 +47,6 @@ const InteractiveMovie = () => {
     fetchApiKey();
   }, [toast]);
 
-  // Initialize ElevenLabs conversation with API key
   const conversation = useConversation({
     apiKey: elevenlabsApiKey,
     overrides: {
@@ -70,23 +66,46 @@ const InteractiveMovie = () => {
     },
   });
 
-  // Example scene for testing
-  const demoScene: SceneData = {
-    id: 1,
-    background: "https://images.unsplash.com/photo-1536440136628-849c177e76a1",
-    character: {
-      name: "Sarah",
-      voiceId: "EXAVITQu4vr4xnSDxMaL",
-      dialogue: "Hello there! I need your help. Should we take the path through the forest or head towards the city?",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
-    },
-    choices: ["Forest path", "City route"],
+  const generateScene = async (choice?: string) => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-scene', {
+        body: { 
+          genre,
+          currentScene,
+          lastChoice: choice
+        }
+      });
+
+      if (error) throw error;
+      
+      const newScene = {
+        id: currentScene ? currentScene.id + 1 : 1,
+        ...JSON.parse(data.scene)
+      };
+
+      if (currentScene) {
+        addToHistory(currentScene);
+      }
+      setCurrentScene(newScene);
+      
+      startConversation();
+
+    } catch (error) {
+      console.error('Error generating scene:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate the next scene",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   useEffect(() => {
-    if (genre && elevenlabsApiKey) {
-      setCurrentScene(demoScene);
-      startConversation();
+    if (genre && elevenlabsApiKey && !currentScene && !isGenerating) {
+      generateScene();
     }
   }, [genre, elevenlabsApiKey]);
 
@@ -104,6 +123,10 @@ const InteractiveMovie = () => {
     setIsListening(true);
     // Voice interaction logic here
     setIsListening(false);
+  };
+
+  const handleChoice = async (choice: string) => {
+    generateScene(choice);
   };
 
   if (!currentScene) return null;
@@ -153,6 +176,7 @@ const InteractiveMovie = () => {
                 <button
                   className={`cinema-button ${isListening ? 'bg-red-500' : ''}`}
                   onClick={handleVoiceInteraction}
+                  disabled={isGenerating}
                 >
                   {isListening ? 'Listening...' : 'Speak'}
                 </button>
@@ -162,7 +186,8 @@ const InteractiveMovie = () => {
                     <button
                       key={index}
                       className="cinema-button"
-                      onClick={() => console.log(`Selected: ${choice}`)}
+                      onClick={() => handleChoice(choice)}
+                      disabled={isGenerating}
                     >
                       {choice}
                     </button>
