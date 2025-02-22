@@ -25,17 +25,21 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
 
     console.log('Initialized Fal client, sending request...');
 
-    // Using the simplified input format from their docs
+    // Create the input object first so we can log it
+    const input = {
+      prompt: isCharacter 
+        ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
+        : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
+      negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
+      num_inference_steps: isCharacter ? 30 : 20,
+      scheduler: "DPM++ 2M",  // Using one of the explicitly permitted values
+      seed: Math.floor(Math.random() * 1000000)
+    };
+
+    console.log('Sending request with input:', input);
+
     const result = await fal.subscribe('110602490-fast-sdxl', {
-      input: {
-        prompt: isCharacter 
-          ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
-          : `cinematic high-quality scene of ${prompt}, atmospheric and dramatic, suitable for movie scene, wide shot, 4k, high resolution`,
-        negative_prompt: "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs",
-        num_inference_steps: isCharacter ? 30 : 20,
-        scheduler: "Euler A",  // Changed from "K_EULER" to "Euler A" which is in the permitted values
-        seed: Math.floor(Math.random() * 1000000)
-      }
+      input
     });
 
     console.log('Received response from Fal:', result);
