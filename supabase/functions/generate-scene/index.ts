@@ -7,6 +7,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function generateImageFromPrompt(prompt: string): Promise<string> {
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: "dall-e-3",
+      prompt: `A cinematic, high-quality scene of ${prompt}. The image should be atmospheric and dramatic, suitable for a movie scene.`,
+      n: 1,
+      size: "1024x1024",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to generate image');
+  }
+
+  const data = await response.json();
+  return data.data[0].url;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -31,7 +54,7 @@ serve(async (req) => {
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. Ensure you return ONLY the JSON object.`
+    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Ensure you return ONLY the JSON object.`
 
     console.log('Sending prompt to OpenAI')
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -41,7 +64,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -81,6 +104,20 @@ serve(async (req) => {
       throw new Error('Generated scene is missing required fields')
     }
 
+    // Generate background image based on the scene description
+    console.log('Generating background image for:', parsedScene.background)
+    const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background)
+    
+    // Update the scene with the generated image URL
+    parsedScene.background = backgroundImageUrl
+
+    // Generate character image if needed
+    if (!parsedScene.character.image || parsedScene.character.image.startsWith('URL')) {
+      console.log('Generating character image for:', parsedScene.character.name)
+      const characterImagePrompt = `A portrait of ${parsedScene.character.name}, a character in a ${genre} story`
+      parsedScene.character.image = await generateImageFromPrompt(characterImagePrompt)
+    }
+
     // Ensure the character has all required fields
     const requiredCharacterFields = ['name', 'voiceId', 'dialogue', 'image']
     for (const field of requiredCharacterFields) {
@@ -90,8 +127,8 @@ serve(async (req) => {
     }
 
     // If we get here, the scene is valid
-    console.log('Successfully generated and validated scene')
-    return new Response(JSON.stringify({ scene: sceneContent }), {
+    console.log('Successfully generated and validated scene with images')
+    return new Response(JSON.stringify({ scene: JSON.stringify(parsedScene) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 
