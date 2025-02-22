@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -7,13 +8,10 @@ const corsHeaders = {
 }
 
 async function generateImageFromPrompt(prompt: string, isCharacter: boolean = false): Promise<string> {
-  const response = await fetch('https://api.fal.ai/text-to-image', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Key ${Deno.env.get('FAL_KEY')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  console.log(`Generating ${isCharacter ? 'character' : 'background'} image with prompt:`, prompt);
+  
+  try {
+    const payload = {
       model_name: 'stable-diffusion-xl-v1-0',
       prompt: isCharacter 
         ? `professional portrait photograph, upper body shot facing forward, video game character portrait style of ${prompt}, photorealistic, dramatic lighting, direct eye contact with viewer, detailed face, cinematic quality, 4k, high resolution`
@@ -22,21 +20,39 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
       image_size: "1024x1024",
       sync_mode: true,
       num_inference_steps: isCharacter ? 30 : 20,
-    }),
-  });
+    };
+    
+    console.log('Sending request to Fal API with payload:', JSON.stringify(payload));
+    
+    const response = await fetch('https://api.fal.ai/text-to-image', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${Deno.env.get('FAL_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
-    console.error('Fal API error:', await response.text());
-    throw new Error('Failed to generate image');
+    const responseText = await response.text();
+    console.log('Raw Fal API response:', responseText);
+
+    if (!response.ok) {
+      throw new Error(`Fal API error (${response.status}): ${responseText}`);
+    }
+
+    const data = JSON.parse(responseText);
+    console.log('Parsed Fal API response:', data);
+    
+    if (!data?.image?.url) {
+      throw new Error('No image URL in response: ' + JSON.stringify(data));
+    }
+
+    console.log('Successfully generated image URL:', data.image.url);
+    return data.image.url;
+  } catch (error) {
+    console.error('Error in generateImageFromPrompt:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  
-  if (!data?.image?.url) {
-    throw new Error('No image URL in response');
-  }
-
-  return data.image.url;
 }
 
 serve(async (req) => {
