@@ -13,6 +13,7 @@ interface SceneData {
     name: string;
     voiceId: string;
     dialogue: string;
+    image: string;
   };
   choices: string[];
 }
@@ -77,6 +78,7 @@ const InteractiveMovie = () => {
       name: "Sarah",
       voiceId: "EXAVITQu4vr4xnSDxMaL",
       dialogue: "Hello there! I need your help. Should we take the path through the forest or head towards the city?",
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
     },
     choices: ["Forest path", "City route"],
   };
@@ -125,32 +127,47 @@ const InteractiveMovie = () => {
         
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <motion.div 
-            className="cinema-card max-w-3xl mx-auto"
+            className="cinema-card max-w-4xl mx-auto flex items-end gap-8"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <h3 className="text-xl font-semibold mb-4">{currentScene.character.name}</h3>
-            <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
-            
-            <div className="flex items-center justify-between">
-              <button
-                className={`cinema-button ${isListening ? 'bg-red-500' : ''}`}
-                onClick={handleVoiceInteraction}
-              >
-                {isListening ? 'Listening...' : 'Speak'}
-              </button>
+            <motion.div 
+              className="relative w-48 h-48"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              <img 
+                src={currentScene.character.image} 
+                alt={currentScene.character.name}
+                className="w-full h-full object-cover rounded-lg shadow-lg"
+              />
+            </motion.div>
+
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold mb-4">{currentScene.character.name}</h3>
+              <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
               
-              <div className="flex gap-4">
-                {currentScene.choices.map((choice, index) => (
-                  <button
-                    key={index}
-                    className="cinema-button"
-                    onClick={() => console.log(`Selected: ${choice}`)}
-                  >
-                    {choice}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <button
+                  className={`cinema-button ${isListening ? 'bg-red-500' : ''}`}
+                  onClick={handleVoiceInteraction}
+                >
+                  {isListening ? 'Listening...' : 'Speak'}
+                </button>
+                
+                <div className="flex gap-4">
+                  {currentScene.choices.map((choice, index) => (
+                    <button
+                      key={index}
+                      className="cinema-button"
+                      onClick={() => console.log(`Selected: ${choice}`)}
+                    >
+                      {choice}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
