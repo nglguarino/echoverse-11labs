@@ -61,13 +61,14 @@ const InteractiveMovie = () => {
     apiKey: elevenlabsApiKey,
     overrides: {
       tts: {
-        voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
+        voiceId: currentScene?.character?.voiceId || "21m00Tcm4TlvDq8ikWAM", // Use character's voice ID or fallback to Rachel
       },
     },
     onMessage: (message) => {
       console.log("Received message:", message);
     },
     onError: (error) => {
+      console.error("ElevenLabs error:", error);
       toast({
         title: "Error",
         description: "There was an error with the voice interaction",
@@ -75,6 +76,29 @@ const InteractiveMovie = () => {
       });
     },
   });
+
+  const speakDialogue = async () => {
+    if (!currentScene?.character?.dialogue) return;
+    
+    try {
+      const session = await conversation.startSession({
+        agentId: "default",
+      });
+      console.log("Started session:", session);
+      
+      // Send the dialogue directly to be spoken
+      await conversation.send({
+        text: currentScene.character.dialogue,
+      });
+    } catch (error) {
+      console.error("Error speaking dialogue:", error);
+      toast({
+        title: "Error",
+        description: "Failed to speak dialogue",
+        variant: "destructive",
+      });
+    }
+  };
 
   const generateScene = async (choice?: string) => {
     setIsGenerating(true);
@@ -84,7 +108,7 @@ const InteractiveMovie = () => {
           genre,
           currentScene,
           lastChoice: choice,
-          storyBackground // Pass the existing background to maintain consistency
+          storyBackground
         }
       });
 
@@ -95,7 +119,6 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
-      // Set the story background only for the first scene
       if (!currentScene && !storyBackground) {
         setStoryBackground(newScene.background);
       }
@@ -104,13 +127,16 @@ const InteractiveMovie = () => {
         addToHistory(currentScene);
       }
       
-      // Use the persistent background for all scenes after the first one
       if (storyBackground) {
         newScene.background = storyBackground;
       }
       
       setCurrentScene(newScene);
-      startConversation();
+      
+      // Speak the dialogue after setting the new scene
+      setTimeout(() => {
+        speakDialogue();
+      }, 1000); // Small delay to ensure the scene is properly set
 
     } catch (error) {
       console.error('Error generating scene:', error);
@@ -130,19 +156,9 @@ const InteractiveMovie = () => {
     }
   }, [genre, elevenlabsApiKey]);
 
-  const startConversation = async () => {
-    try {
-      await conversation.startSession({
-        agentId: "default",
-      });
-    } catch (error) {
-      console.error("Error starting conversation:", error);
-    }
-  };
-
   const handleVoiceInteraction = async () => {
     setIsListening(true);
-    // Voice interaction logic here
+    await speakDialogue();
     setIsListening(false);
   };
 
