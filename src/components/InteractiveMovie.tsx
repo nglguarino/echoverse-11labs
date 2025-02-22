@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useConversation } from '@11labs/react';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from "@/integrations/supabase/client";
 
 interface SceneData {
   id: number;
@@ -21,12 +22,10 @@ const InteractiveMovie = () => {
   const { genre } = useMovieStore();
   const [currentScene, setCurrentScene] = useState<SceneData | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [isKeySet, setIsKeySet] = useState(false);
 
-  // Initialize ElevenLabs conversation
+  // Initialize ElevenLabs conversation with API key from Supabase
   const conversation = useConversation({
-    apiKey: apiKey,
+    apiKey: process.env.ELEVEN_LABS_API_KEY || '',
     overrides: {
       tts: {
         voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
@@ -57,11 +56,11 @@ const InteractiveMovie = () => {
   };
 
   useEffect(() => {
-    if (genre && isKeySet) {
+    if (genre) {
       setCurrentScene(demoScene);
       startConversation();
     }
-  }, [genre, isKeySet]);
+  }, [genre]);
 
   const startConversation = async () => {
     try {
@@ -78,47 +77,6 @@ const InteractiveMovie = () => {
     // Voice interaction logic here
     setIsListening(false);
   };
-
-  const handleSubmitApiKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (apiKey.trim()) {
-      setIsKeySet(true);
-      toast({
-        title: "Success",
-        description: "ElevenLabs API key has been set",
-      });
-    }
-  };
-
-  if (!isKeySet) {
-    return (
-      <motion.div 
-        className="fixed inset-0 bg-black/90 flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <form 
-          onSubmit={handleSubmitApiKey}
-          className="bg-black/80 p-8 rounded-lg border border-gray-700 w-full max-w-md"
-        >
-          <h2 className="text-xl font-semibold mb-4 text-white">Enter ElevenLabs API Key</h2>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="w-full p-2 mb-4 bg-gray-800 border border-gray-700 rounded text-white"
-            placeholder="Enter your API key"
-          />
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            Start Experience
-          </button>
-        </form>
-      </motion.div>
-    );
-  }
 
   if (!currentScene) return null;
 
