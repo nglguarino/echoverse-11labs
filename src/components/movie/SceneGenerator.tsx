@@ -23,7 +23,14 @@ const SceneGenerator = ({ onConversationStart, choice }: SceneGeneratorProps) =>
   const { toast } = useToast();
 
   const generateScene = async (userChoice?: string) => {
+    if (!genre) {
+      console.error('No genre selected');
+      return;
+    }
+
+    console.log('Generating scene for genre:', genre);
     setIsGenerating(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('generate-scene', {
         body: { 
@@ -34,12 +41,24 @@ const SceneGenerator = ({ onConversationStart, choice }: SceneGeneratorProps) =>
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!data || !data.scene) {
+        console.error('No scene data received');
+        throw new Error('No scene data received from the server');
+      }
+
+      console.log('Received scene data:', data);
       
       const newScene = {
         id: currentScene ? currentScene.id + 1 : 1,
         ...JSON.parse(data.scene)
       };
+
+      console.log('Parsed new scene:', newScene);
 
       if (!currentScene && !storyBackground) {
         setStoryBackground(newScene.background);
@@ -60,7 +79,7 @@ const SceneGenerator = ({ onConversationStart, choice }: SceneGeneratorProps) =>
       console.error('Error generating scene:', error);
       toast({
         title: "Error",
-        description: "Failed to generate the next scene",
+        description: "Failed to generate the next scene. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -69,12 +88,21 @@ const SceneGenerator = ({ onConversationStart, choice }: SceneGeneratorProps) =>
   };
 
   useEffect(() => {
+    const initializeScene = async () => {
+      if (genre && !currentScene && !isGenerating) {
+        console.log('Initializing first scene for genre:', genre);
+        await generateScene();
+      }
+    };
+
+    initializeScene();
+  }, [genre]);
+
+  useEffect(() => {
     if (choice !== undefined) {
       generateScene(choice);
-    } else if (genre && !currentScene && !isGenerating) {
-      generateScene();
     }
-  }, [genre, choice]);
+  }, [choice]);
 
   return null;
 };
