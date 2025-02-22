@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -37,26 +36,16 @@ const InteractiveMovie = () => {
     setIsListening(true);
     
     try {
-      // Make the request to the Edge Function
-      const response = await fetch(`${supabase.functions.getUrl('text-to-speech')}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { 
           text: currentScene.character.dialogue,
           voiceId: currentScene.character.voiceId
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
-      }
+      if (error) throw error;
 
-      // Get the audio data as an ArrayBuffer
-      const audioData = await response.arrayBuffer();
-      const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
+      const audioBlob = new Blob([data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
       if (audioRef.current) {
@@ -109,7 +98,6 @@ const InteractiveMovie = () => {
       
       setCurrentScene(newScene);
       
-      // Speak the dialogue after setting the new scene
       setTimeout(() => {
         speakDialogue();
       }, 1000); // Small delay to ensure the scene is properly set
