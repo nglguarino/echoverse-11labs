@@ -113,24 +113,31 @@ const InteractiveMovie = () => {
 
       // Store character info on first scene
       if (!storyCharacter) {
+        // Extract initial character info
         const character = {
           name: newScene.character.name,
           image: newScene.character.image,
           gender: newScene.character.gender
         };
+        console.log('Setting initial character:', character);
         setStoryCharacter(character);
-        // Set initial voice based on gender
-        newScene.character.voiceId = character.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
       } else {
-        // Maintain character consistency and ensure correct voice
+        // Maintain character consistency
+        console.log('Maintaining character consistency:', storyCharacter);
         newScene.character = {
           ...newScene.character,
           name: storyCharacter.name,
           image: storyCharacter.image,
           gender: storyCharacter.gender,
-          voiceId: storyCharacter.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'
         };
       }
+      
+      // Always set voice ID based on gender
+      newScene.character.voiceId = newScene.character.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      console.log('Set voice ID based on gender:', {
+        gender: newScene.character.gender,
+        voiceId: newScene.character.voiceId
+      });
 
       if (currentScene) {
         addToHistory(currentScene);

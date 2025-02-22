@@ -69,19 +69,19 @@ serve(async (req) => {
     const { genre, currentScene, lastChoice, storyCharacter } = await req.json();
     console.log('Received request:', { genre, currentScene, lastChoice, storyCharacter });
     
-    // Modify the prompt to maintain character consistency
+    // Modify the prompt to maintain character consistency and ensure proper gender
     const characterContext = storyCharacter 
-      ? `Continue the story with ${storyCharacter.name}, the same character from before. Maintain their personality and appearance.`
-      : 'Create a new character for this story.';
+      ? `Continue the story with ${storyCharacter.name}, who is a ${storyCharacter.gender} character. Maintain their personality, gender, and appearance exactly as established.`
+      : 'Create a new character for this story. Clearly specify if they are male or female.';
     
     const prompt = `Generate the next scene for an interactive ${genre} story. ${characterContext} Format the response as a JSON object with the following structure:
     {
       "background": "description of the scene setting",
       "character": {
-        "name": "${storyCharacter?.name || 'character name'}",
+        "name": "${storyCharacter?.name || '[character name]'}",
         "voiceId": "${storyCharacter?.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'}",
         "dialogue": "character's dialogue",
-        "image": "${storyCharacter?.image || 'URL for a character image'}",
+        "image": "${storyCharacter?.image || '[character image url]'}",
         "gender": "${storyCharacter?.gender || 'male'}"
       },
       "choices": ["choice 1", "choice 2"]
@@ -130,6 +130,18 @@ serve(async (req) => {
     let parsedScene;
     try {
       parsedScene = JSON.parse(sceneContent);
+      
+      // Force correct voice ID based on gender
+      const gender = storyCharacter?.gender || parsedScene.character.gender;
+      parsedScene.character.voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      
+      if (storyCharacter) {
+        // Ensure character consistency
+        parsedScene.character.name = storyCharacter.name;
+        parsedScene.character.image = storyCharacter.image;
+        parsedScene.character.gender = storyCharacter.gender;
+      }
+      
     } catch (e) {
       console.error('Failed to parse scene content as JSON:', e);
       throw new Error('Generated content is not valid JSON');
