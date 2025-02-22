@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useConversation } from '@11labs/react';
@@ -19,7 +20,16 @@ interface SceneData {
 
 const InteractiveMovie = () => {
   const { toast } = useToast();
-  const { genre, currentScene, setCurrentScene, addToHistory, isGenerating, setIsGenerating } = useMovieStore();
+  const { 
+    genre, 
+    currentScene, 
+    setCurrentScene, 
+    addToHistory, 
+    isGenerating, 
+    setIsGenerating,
+    storyBackground,
+    setStoryBackground 
+  } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string>('');
 
@@ -73,7 +83,8 @@ const InteractiveMovie = () => {
         body: { 
           genre,
           currentScene,
-          lastChoice: choice
+          lastChoice: choice,
+          storyBackground // Pass the existing background to maintain consistency
         }
       });
 
@@ -84,11 +95,21 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
+      // Set the story background only for the first scene
+      if (!currentScene && !storyBackground) {
+        setStoryBackground(newScene.background);
+      }
+
       if (currentScene) {
         addToHistory(currentScene);
       }
-      setCurrentScene(newScene);
       
+      // Use the persistent background for all scenes after the first one
+      if (storyBackground) {
+        newScene.background = storyBackground;
+      }
+      
+      setCurrentScene(newScene);
       startConversation();
 
     } catch (error) {
@@ -112,7 +133,7 @@ const InteractiveMovie = () => {
   const startConversation = async () => {
     try {
       await conversation.startSession({
-        agentId: "default", // Replace with your ElevenLabs agent ID
+        agentId: "default",
       });
     } catch (error) {
       console.error("Error starting conversation:", error);
