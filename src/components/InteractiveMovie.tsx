@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useConversation } from '@11labs/react';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
@@ -31,63 +30,30 @@ const InteractiveMovie = () => {
     setStoryBackground 
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
-  const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string>('');
-
-  useEffect(() => {
-    const fetchApiKey = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-secret', {
-          body: { secretName: 'ELEVEN_LABS_API_KEY' }
-        });
-        
-        if (error) throw error;
-        if (!data) throw new Error('No data received from the server');
-        
-        setElevenlabsApiKey(data.ELEVEN_LABS_API_KEY);
-      } catch (error) {
-        console.error('Error fetching API key:', error);
-        toast({
-          title: "Error",
-          description: "Could not fetch API key",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchApiKey();
-  }, [toast]);
-
-  const conversation = useConversation({
-    apiKey: elevenlabsApiKey,
-    overrides: {
-      tts: {
-        voiceId: currentScene?.character?.voiceId || "21m00Tcm4TlvDq8ikWAM", // Use character's voice ID or fallback to Rachel
-      },
-    },
-    onMessage: (message) => {
-      console.log("Received message:", message);
-    },
-    onError: (error) => {
-      console.error("ElevenLabs error:", error);
-      toast({
-        title: "Error",
-        description: "There was an error with the voice interaction",
-        variant: "destructive",
-      });
-    },
-  });
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const speakDialogue = async () => {
     if (!currentScene?.character?.dialogue) return;
+    setIsListening(true);
     
     try {
-      await conversation.startSession({
-        agentId: "default",
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { 
+          text: currentScene.character.dialogue,
+          voiceId: currentScene.character.voiceId
+        }
       });
 
-      // Use text-to-speech synthesis directly
-      const utterance = new SpeechSynthesisUtterance(currentScene.character.dialogue);
-      window.speechSynthesis.speak(utterance);
+      if (error) throw error;
+
+      // Create a blob from the audio data
+      const audioBlob = new Blob([data], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
+      }
 
     } catch (error) {
       console.error("Error speaking dialogue:", error);
@@ -96,6 +62,8 @@ const InteractiveMovie = () => {
         description: "Failed to speak dialogue",
         variant: "destructive",
       });
+    } finally {
+      setIsListening(false);
     }
   };
 
@@ -150,18 +118,16 @@ const InteractiveMovie = () => {
   };
 
   useEffect(() => {
-    if (genre && elevenlabsApiKey && !currentScene && !isGenerating) {
+    if (genre && !currentScene && !isGenerating) {
       generateScene();
     }
-  }, [genre, elevenlabsApiKey]);
+  }, [genre]);
 
-  const handleVoiceInteraction = async () => {
-    setIsListening(true);
-    await speakDialogue();
-    setIsListening(false);
+  const handleVoiceInteraction = () => {
+    speakDialogue();
   };
 
-  const handleChoice = async (choice: string) => {
+  const handleChoice = (choice: string) => {
     generateScene(choice);
   };
 
@@ -174,6 +140,7 @@ const InteractiveMovie = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      <audio ref={audioRef} className="hidden" />
       <div 
         className="relative h-full"
         style={{
@@ -212,9 +179,9 @@ const InteractiveMovie = () => {
                 <button
                   className={`cinema-button ${isListening ? 'bg-red-500' : ''}`}
                   onClick={handleVoiceInteraction}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isListening}
                 >
-                  {isListening ? 'Listening...' : 'Speak'}
+                  {isListening ? 'Speaking...' : 'Speak'}
                 </button>
                 
                 <div className="flex gap-4">
@@ -223,7 +190,7 @@ const InteractiveMovie = () => {
                       key={index}
                       className="cinema-button"
                       onClick={() => handleChoice(choice)}
-                      disabled={isGenerating}
+                      disabled={isGenerating || isListening}
                     >
                       {choice}
                     </button>
