@@ -9,9 +9,11 @@ const Index = () => {
   const { setGenre, genre } = useMovieStore();
   const [isStarting, setIsStarting] = useState(false);
 
-  const handleGenreSelect = (selectedGenre: string) => {
-    setGenre(selectedGenre);
+  const handleGenreSelect = async (selectedGenre: string) => {
     setIsStarting(true);
+    // Add a small delay for the transition
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setGenre(selectedGenre);
   };
 
   return (

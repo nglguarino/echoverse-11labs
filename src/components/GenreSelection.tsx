@@ -14,42 +14,39 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
   };
 
   return (
-    <div 
-      className="w-full max-w-lg mx-auto p-6 flex flex-col items-center justify-center min-h-screen
-                 bg-gradient-to-b from-cinema-background via-cinema-background/95 to-cinema-background/90
-                 relative"
-    >
+    <div className="fixed inset-0 flex items-center justify-center bg-cinema-background">
       <AnimatePresence mode="wait">
         {isStarting ? (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-cinema-background/95"
+            key="loading"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center gap-8"
           >
-            <div className="flex flex-col items-center gap-8">
-              <motion.div
-                className="w-16 h-16 border-4 border-t-[#1EAEDB] border-r-[#9b87f5] border-b-[#1EAEDB] border-l-[#9b87f5] rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.p 
-                className="text-lg text-cinema-text font-medium"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                Preparing your cinematic journey...
-              </motion.p>
-            </div>
+            <motion.div
+              className="w-16 h-16 border-4 border-t-[#1EAEDB] border-r-[#9b87f5] border-b-[#1EAEDB] border-l-[#9b87f5] rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.p 
+              className="text-lg text-cinema-text font-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Preparing your cinematic journey...
+            </motion.p>
           </motion.div>
         ) : (
           <motion.div
+            key="content"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center"
+            className="text-center max-w-lg mx-auto p-6"
           >
             <motion.h1 
               className="text-5xl md:text-7xl font-bold mb-6 text-center bg-clip-text text-transparent 
