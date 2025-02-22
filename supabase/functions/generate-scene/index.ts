@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function generateImageFromPrompt(prompt: string): Promise<string> {
+async function generateImageFromPrompt(prompt: string, isCharacter: boolean = false): Promise<string> {
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
@@ -16,7 +16,9 @@ async function generateImageFromPrompt(prompt: string): Promise<string> {
     },
     body: JSON.stringify({
       model: "dall-e-3",
-      prompt: `A cinematic, high-quality scene of ${prompt}. The image should be atmospheric and dramatic, suitable for a movie scene.`,
+      prompt: isCharacter 
+        ? `A professional portrait photograph of ${prompt}. Upper body shot, facing forward, similar to a video game character portrait. Photorealistic style with dramatic lighting. The character should be making direct eye contact with the viewer.`
+        : `A cinematic, high-quality scene of ${prompt}. The image should be atmospheric and dramatic, suitable for a movie scene.`,
       n: 1,
       size: "1024x1024",
     }),
@@ -54,7 +56,7 @@ serve(async (req) => {
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Ensure you return ONLY the JSON object.`
+    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Create a new character for each scene, with a unique name and appearance. Ensure you return ONLY the JSON object.`
 
     console.log('Sending prompt to OpenAI')
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -68,7 +70,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a creative writing assistant that generates interactive story scenes. Always respond with valid JSON that matches the requested structure exactly.'
+            content: 'You are a creative writing assistant that generates interactive story scenes. Always respond with valid JSON that matches the requested structure exactly. Create unique and diverse characters for each scene.'
           },
           { role: 'user', content: prompt }
         ],
@@ -90,7 +92,6 @@ serve(async (req) => {
     const sceneContent = data.choices[0].message.content
     console.log('Scene content:', sceneContent)
 
-    // Try to parse the scene content as JSON
     let parsedScene
     try {
       parsedScene = JSON.parse(sceneContent)
@@ -99,7 +100,6 @@ serve(async (req) => {
       throw new Error('Generated content is not valid JSON')
     }
 
-    // Validate the scene structure
     if (!parsedScene.background || !parsedScene.character || !parsedScene.choices) {
       throw new Error('Generated scene is missing required fields')
     }
@@ -111,12 +111,10 @@ serve(async (req) => {
     // Update the scene with the generated image URL
     parsedScene.background = backgroundImageUrl
 
-    // Generate character image if needed
-    if (!parsedScene.character.image || parsedScene.character.image.startsWith('URL')) {
-      console.log('Generating character image for:', parsedScene.character.name)
-      const characterImagePrompt = `A portrait of ${parsedScene.character.name}, a character in a ${genre} story`
-      parsedScene.character.image = await generateImageFromPrompt(characterImagePrompt)
-    }
+    // Always generate a new character image
+    console.log('Generating character image for:', parsedScene.character.name)
+    const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`
+    parsedScene.character.image = await generateImageFromPrompt(characterDescription, true)
 
     // Ensure the character has all required fields
     const requiredCharacterFields = ['name', 'voiceId', 'dialogue', 'image']
@@ -126,7 +124,6 @@ serve(async (req) => {
       }
     }
 
-    // If we get here, the scene is valid
     console.log('Successfully generated and validated scene with images')
     return new Response(JSON.stringify({ scene: JSON.stringify(parsedScene) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

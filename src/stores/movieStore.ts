@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 
-interface Scene {
+export interface Scene {
   id: number;
   background: string;
   character: {
