@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
+import { Mic, MicOff } from 'lucide-react';
 
 const InteractiveMovie = () => {
   const { toast } = useToast();
@@ -20,7 +21,10 @@ const InteractiveMovie = () => {
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const generateScene = async (choice?: string) => {
     setIsGenerating(true);
@@ -145,6 +149,78 @@ const InteractiveMovie = () => {
     }
   };
 
+  const startVoiceInput = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        
+        reader.onload = async () => {
+          const base64Audio = (reader.result as string).split(',')[1];
+          
+          try {
+            const { data, error } = await supabase.functions.invoke('voice-to-text', {
+              body: { audio: base64Audio }
+            });
+
+            if (error) throw error;
+
+            if (data.text) {
+              console.log('Voice input converted to text:', data.text);
+              generateScene(data.text);
+            }
+
+          } catch (error) {
+            console.error('Error processing voice input:', error);
+            toast({
+              title: "Error",
+              description: "Failed to process voice input",
+              variant: "destructive",
+            });
+          }
+        };
+
+        reader.readAsDataURL(audioBlob);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      
+      toast({
+        title: "Recording Started",
+        description: "Speak your choice now",
+      });
+
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Error",
+        description: "Failed to access microphone",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopVoiceInput = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+  };
+
   useEffect(() => {
     if (currentScene && !isGenerating) {
       console.log('New scene detected, starting automatic speech...');
@@ -219,7 +295,7 @@ const InteractiveMovie = () => {
               <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
               
               <div className="flex flex-col gap-4">
-                <div className="flex gap-4 justify-end">
+                <div className="flex gap-4 justify-end items-center">
                   {currentScene.choices.map((choice, index) => (
                     <button
                       key={index}
@@ -230,6 +306,13 @@ const InteractiveMovie = () => {
                       {choice}
                     </button>
                   ))}
+                  <button
+                    className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                    onClick={isRecording ? stopVoiceInput : startVoiceInput}
+                    disabled={isGenerating || isListening}
+                  >
+                    {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
                 </div>
                 
                 <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
