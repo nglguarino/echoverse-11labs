@@ -1,16 +1,19 @@
 
 import { create } from 'zustand';
 
+export interface Character {
+  name: string;
+  voiceId: string;
+  dialogue: string;
+  image: string;
+  gender: 'male' | 'female';
+}
+
 export interface Scene {
   id: number;
   background: string;
-  character: {
-    name: string;
-    voiceId: string;
-    dialogue: string;
-    image: string;
-    gender: 'male' | 'female';
-  };
+  mainCharacter: Character;
+  supportingCharacters: Character[];
   choices: string[];
 }
 
