@@ -4,20 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GenreSelection from '@/components/GenreSelection';
 import InteractiveMovie from '@/components/InteractiveMovie';
 import { useMovieStore } from '@/stores/movieStore';
-import { useToast } from '@/components/ui/use-toast';
 
 const Index = () => {
-  const { toast } = useToast();
   const { setGenre, genre } = useMovieStore();
   const [isStarting, setIsStarting] = useState(false);
 
   const handleGenreSelect = (selectedGenre: string) => {
     setGenre(selectedGenre);
     setIsStarting(true);
-    toast({
-      title: 'Genre Selected',
-      description: `Preparing your ${selectedGenre} adventure...`,
-    });
   };
 
   return (
@@ -32,7 +26,7 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="w-full"
           >
-            <GenreSelection onSelect={handleGenreSelect} />
+            <GenreSelection onSelect={handleGenreSelect} isStarting={isStarting} />
           </motion.div>
         ) : (
           <motion.div
