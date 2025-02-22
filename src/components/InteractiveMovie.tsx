@@ -128,11 +128,6 @@ const InteractiveMovie = () => {
       }
       
       setCurrentScene(newScene);
-      
-      setTimeout(() => {
-        speakDialogue();
-      }, 1000);
-
     } catch (error) {
       console.error('Error generating scene:', error);
       toast({
@@ -144,6 +139,19 @@ const InteractiveMovie = () => {
       setIsGenerating(false);
     }
   };
+
+  // Add useEffect to handle automatic speech when currentScene changes
+  useEffect(() => {
+    if (currentScene && !isGenerating) {
+      console.log('New scene detected, starting automatic speech...');
+      // Small delay to ensure scene is fully rendered
+      const timer = setTimeout(() => {
+        speakDialogue();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentScene, isGenerating]);
 
   useEffect(() => {
     if (genre && !currentScene && !isGenerating) {
