@@ -27,28 +27,29 @@ const InteractiveMovie = () => {
   // Fetch API key from Supabase on component mount
   useEffect(() => {
     const fetchApiKey = async () => {
-      const { data: { ELEVEN_LABS_API_KEY }, error } = 
-        await supabase.functions.invoke('get-secret', {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-secret', {
           body: { secretName: 'ELEVEN_LABS_API_KEY' }
         });
-      
-      if (error) {
+        
+        if (error) throw error;
+        if (!data) throw new Error('No data received from the server');
+        
+        setElevenlabsApiKey(data.ELEVEN_LABS_API_KEY);
+      } catch (error) {
         console.error('Error fetching API key:', error);
         toast({
           title: "Error",
           description: "Could not fetch API key",
           variant: "destructive",
         });
-        return;
       }
-
-      setElevenlabsApiKey(ELEVEN_LABS_API_KEY);
     };
 
     fetchApiKey();
-  }, []);
+  }, [toast]);
 
-  // Initialize ElevenLabs conversation with API key from Supabase
+  // Initialize ElevenLabs conversation with API key
   const conversation = useConversation({
     apiKey: elevenlabsApiKey,
     overrides: {
