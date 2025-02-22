@@ -33,9 +33,7 @@ const InteractiveMovie = () => {
     if (currentScene) {
       startConversation();
       // Send message to speak the character's dialogue
-      conversation.send({
-        text: currentScene.character.dialogue,
-      });
+      conversation.speak(currentScene.character.dialogue);
     }
   }, [currentScene?.id]);
 
@@ -56,7 +54,7 @@ const InteractiveMovie = () => {
   const handleVoiceInteraction = async () => {
     setIsListening(true);
     try {
-      conversation.startInput();
+      conversation.startRecording();
       // Voice input handling will be managed through onMessage callback
     } catch (error) {
       console.error("Error with voice interaction:", error);
