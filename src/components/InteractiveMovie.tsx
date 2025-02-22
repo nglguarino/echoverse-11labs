@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -23,30 +22,89 @@ const InteractiveMovie = () => {
   const [customChoice, setCustomChoice] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  const generateScene = async (choice?: string) => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-scene', {
+        body: { 
+          genre,
+          currentScene,
+          lastChoice: choice,
+          storyCharacter
+        }
+      });
+
+      if (error) throw error;
+      
+      const newScene = {
+        id: currentScene ? currentScene.id + 1 : 1,
+        ...JSON.parse(data.scene)
+      };
+
+      if (!currentScene && !storyBackground) {
+        setStoryBackground(newScene.background);
+      }
+
+      if (!storyCharacter) {
+        const character = {
+          name: newScene.character.name,
+          image: newScene.character.image,
+          gender: newScene.character.gender
+        };
+        console.log('Setting initial character:', character);
+        setStoryCharacter(character);
+      }
+
+      const gender = storyCharacter?.gender || newScene.character.gender;
+      console.log('Character gender for voice selection:', gender);
+      newScene.character.voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      console.log('Voice ID set to:', newScene.character.voiceId);
+
+      if (currentScene) {
+        addToHistory(currentScene);
+      }
+      
+      if (storyBackground) {
+        newScene.background = storyBackground;
+      }
+      
+      setCurrentScene(newScene);
+    } catch (error) {
+      console.error('Error generating scene:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate the next scene",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const speakDialogue = async () => {
     if (!currentScene?.character?.dialogue) return;
     setIsListening(true);
     
     try {
-      console.log('Starting text-to-speech request with:', {
-        text: currentScene.character.dialogue,
-        voiceId: currentScene.character.voiceId
+      const gender = currentScene.character.gender;
+      const voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      
+      console.log('Speaking dialogue with:', {
+        gender: gender,
+        voiceId: voiceId,
+        text: currentScene.character.dialogue
       });
 
       const { data, error } = await supabase.functions.invoke('text-to-speech', {
         body: { 
           text: currentScene.character.dialogue,
-          voiceId: currentScene.character.voiceId
+          voiceId: voiceId
         }
       });
 
       if (error) {
         console.error('Supabase Edge Function error:', error);
         throw error;
-      }
-
-      if (!data?.data) {
-        throw new Error('No audio data received');
       }
 
       console.log('Creating audio blob...');
@@ -84,79 +142,6 @@ const InteractiveMovie = () => {
       });
     } finally {
       setIsListening(false);
-    }
-  };
-
-  const generateScene = async (choice?: string) => {
-    setIsGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-scene', {
-        body: { 
-          genre,
-          currentScene,
-          lastChoice: choice,
-          storyBackground,
-          storyCharacter
-        }
-      });
-
-      if (error) throw error;
-      
-      const newScene = {
-        id: currentScene ? currentScene.id + 1 : 1,
-        ...JSON.parse(data.scene)
-      };
-
-      if (!currentScene && !storyBackground) {
-        setStoryBackground(newScene.background);
-      }
-
-      // Store character info on first scene
-      if (!storyCharacter) {
-        // Extract initial character info
-        const character = {
-          name: newScene.character.name,
-          image: newScene.character.image,
-          gender: newScene.character.gender
-        };
-        console.log('Setting initial character:', character);
-        setStoryCharacter(character);
-      } else {
-        // Maintain character consistency
-        console.log('Maintaining character consistency:', storyCharacter);
-        newScene.character = {
-          ...newScene.character,
-          name: storyCharacter.name,
-          image: storyCharacter.image,
-          gender: storyCharacter.gender,
-        };
-      }
-      
-      // Always set voice ID based on gender
-      newScene.character.voiceId = newScene.character.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
-      console.log('Set voice ID based on gender:', {
-        gender: newScene.character.gender,
-        voiceId: newScene.character.voiceId
-      });
-
-      if (currentScene) {
-        addToHistory(currentScene);
-      }
-      
-      if (storyBackground) {
-        newScene.background = storyBackground;
-      }
-      
-      setCurrentScene(newScene);
-    } catch (error) {
-      console.error('Error generating scene:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate the next scene",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
     }
   };
 

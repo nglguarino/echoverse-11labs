@@ -1,4 +1,3 @@
-
 // @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -67,11 +66,10 @@ serve(async (req) => {
 
   try {
     const { genre, currentScene, lastChoice, storyCharacter } = await req.json();
-    console.log('Received request:', { genre, currentScene, lastChoice, storyCharacter });
+    console.log('Received request with storyCharacter:', storyCharacter);
     
-    // Modify the prompt to maintain character consistency and ensure proper gender
     const characterContext = storyCharacter 
-      ? `Continue the story with ${storyCharacter.name}, who is a ${storyCharacter.gender} character. Maintain their personality, gender, and appearance exactly as established.`
+      ? `Continue the story with ${storyCharacter.name}, who is a ${storyCharacter.gender} character. Keep their gender as ${storyCharacter.gender}.`
       : 'Create a new character for this story. Clearly specify if they are male or female.';
     
     const prompt = `Generate the next scene for an interactive ${genre} story. ${characterContext} Format the response as a JSON object with the following structure:
@@ -79,7 +77,6 @@ serve(async (req) => {
       "background": "description of the scene setting",
       "character": {
         "name": "${storyCharacter?.name || '[character name]'}",
-        "voiceId": "${storyCharacter?.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'}",
         "dialogue": "character's dialogue",
         "image": "${storyCharacter?.image || '[character image url]'}",
         "gender": "${storyCharacter?.gender || 'male'}"
@@ -90,7 +87,7 @@ serve(async (req) => {
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. For the background description, provide a vivid, detailed description of the physical location and atmosphere. Ensure you return ONLY the JSON object.`;
+    Make it engaging and consistent with the ${genre} genre. Ensure you return ONLY the JSON object.`;
 
     console.log('Sending prompt to OpenAI');
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -131,16 +128,21 @@ serve(async (req) => {
     try {
       parsedScene = JSON.parse(sceneContent);
       
-      // Force correct voice ID based on gender
-      const gender = storyCharacter?.gender || parsedScene.character.gender;
-      parsedScene.character.voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
-      
       if (storyCharacter) {
         // Ensure character consistency
-        parsedScene.character.name = storyCharacter.name;
-        parsedScene.character.image = storyCharacter.image;
-        parsedScene.character.gender = storyCharacter.gender;
+        console.log('Setting character info from storyCharacter:', storyCharacter);
+        parsedScene.character = {
+          ...parsedScene.character,
+          name: storyCharacter.name,
+          image: storyCharacter.image,
+          gender: storyCharacter.gender
+        };
       }
+
+      // Set voice ID based on final gender
+      const finalGender = parsedScene.character.gender;
+      console.log('Setting voice ID for gender:', finalGender);
+      parsedScene.character.voiceId = finalGender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
       
     } catch (e) {
       console.error('Failed to parse scene content as JSON:', e);
