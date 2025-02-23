@@ -6,7 +6,7 @@ import InteractiveMovie from '@/components/InteractiveMovie';
 import { useMovieStore } from '@/stores/movieStore';
 
 const Index = () => {
-  const { genre, currentScene, isGenerating } = useMovieStore();
+  const { genre, currentScene, isGenerating, setGenre } = useMovieStore();
   const [isStarting, setIsStarting] = useState(false);
 
   const handleGenreSelect = async (selectedGenre: string) => {
