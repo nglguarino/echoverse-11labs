@@ -97,7 +97,7 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Step into a world where stories come alive and imagination knows no bounds...
+              Let your imagination drive the story.
             </motion.p>
 
             <motion.div
