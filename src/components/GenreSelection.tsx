@@ -47,10 +47,10 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center max-w-lg mx-auto p-8 relative z-10"
+            className="text-center max-w-lg mx-auto p-8 relative z-10 -mt-32"
           >
             <motion.div 
-              className="mb-8 relative"
+              className="mb-6 relative"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -80,7 +80,7 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             </motion.div>
 
             <motion.h1 
-              className="text-6xl md:text-7xl font-bold mb-8 text-center bg-clip-text text-transparent 
+              className="text-6xl md:text-7xl font-bold mb-6 text-center bg-clip-text text-transparent 
                          bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] to-[#1EAEDB] animate-text
                          tracking-tight"
               initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,7 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             </motion.h1>
             
             <motion.p 
-              className="text-cinema-text/80 text-xl md:text-2xl text-center mb-16
+              className="text-cinema-text/80 text-xl md:text-2xl text-center mb-32
                          font-medium tracking-wide leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
