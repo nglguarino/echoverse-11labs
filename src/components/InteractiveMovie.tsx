@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, MicOff } from 'lucide-react';
+import StoryEnding from '@/components/StoryEnding';
 
 const VOICE_IDS = {
   MALE: 'CwhRBWXzGAHq8TQ4Fs17',   // Roger - clear male voice
