@@ -88,6 +88,18 @@ const InteractiveMovie = () => {
     }
   };
 
+  const handleChoice = (choice: string) => {
+    generateScene(choice);
+  };
+
+  const handleCustomChoice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (customChoice.trim()) {
+      generateScene(customChoice.trim());
+      setCustomChoice("");
+    }
+  };
+
   const speakDialogue = async () => {
     if (!currentScene?.character?.dialogue) return;
     setIsListening(true);
