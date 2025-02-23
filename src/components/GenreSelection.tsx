@@ -1,6 +1,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film } from 'lucide-react';
+import { CircleDot } from 'lucide-react';
 
 interface GenreSelectionProps {
   onSelect: (genre: string) => void;
@@ -50,12 +50,33 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             className="text-center max-w-lg mx-auto p-8 relative z-10"
           >
             <motion.div 
-              className="mb-8"
+              className="mb-8 relative"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Film className="w-16 h-16 mx-auto text-[#1EAEDB]" />
+              <motion.div
+                className="absolute inset-0"
+                animate={{ 
+                  rotate: 360,
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{ 
+                  rotate: {
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear"
+                  },
+                  scale: {
+                    duration: 3,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }
+                }}
+              >
+                <CircleDot className="w-16 h-16 mx-auto text-[#1EAEDB]" />
+              </motion.div>
+              <CircleDot className="w-16 h-16 mx-auto text-[#9b87f5] opacity-50" />
             </motion.div>
 
             <motion.h1 
