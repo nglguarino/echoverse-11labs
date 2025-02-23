@@ -64,12 +64,12 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
       />
       <audio
         ref={hoverSoundRef}
-        src="/hover.wav"
+        src="/hover-button-287656.mp3"
         preload="auto"
       />
       <audio
         ref={clickSoundRef}
-        src="/click.wav"
+        src="/click-21156.mp3"
         preload="auto"
       />
 
