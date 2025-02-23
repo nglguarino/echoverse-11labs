@@ -94,14 +94,20 @@ serve(async (req) => {
   }
 
   try {
-    const { genre, currentScene, lastChoice, storyCharacter } = await req.json();
-    console.log('Received request with storyCharacter:', storyCharacter);
+    const { genre, currentScene, lastChoice, storyCharacter, storyCharacters } = await req.json();
+    console.log('Received request with:', { storyCharacter, storyCharacters });
     
     const characterContext = storyCharacter 
-      ? `Continue the story with ${storyCharacter.name}, who is a ${storyCharacter.gender} character. Keep their gender as ${storyCharacter.gender}.`
+      ? `Continue the story with ${storyCharacter.name} as the main character, who is a ${storyCharacter.gender} character. Keep their gender as ${storyCharacter.gender}.`
       : 'Create a new character for this story. Clearly specify if they are male or female.';
     
-    const prompt = `Generate the next scene for an interactive ${genre} story. ${characterContext} Format the response as a JSON object with the following structure:
+    const existingCharactersContext = storyCharacters?.length 
+      ? `The story also includes these characters: ${storyCharacters.map(c => `${c.name} (${c.gender})`).join(', ')}.` 
+      : '';
+    
+    const prompt = `Generate the next scene for an interactive ${genre} story. ${characterContext} ${existingCharactersContext}
+
+    Format the response as a JSON object with the following structure:
     {
       "background": "description of the scene setting",
       "character": {
@@ -110,13 +116,21 @@ serve(async (req) => {
         "image": "${storyCharacter?.image || '[character image url]'}",
         "gender": "${storyCharacter?.gender || 'male'}"
       },
+      "otherCharacters": [
+        {
+          "name": "character name",
+          "dialogue": "character's dialogue",
+          "image": "character image url",
+          "gender": "male or female"
+        }
+      ],
       "choices": ["choice 1", "choice 2"]
     }
 
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. If the story involves moving to a new location, make sure to describe it in detail. Ensure you return ONLY the JSON object.`;
+    Make it engaging and consistent with the ${genre} genre. If new characters are introduced in the dialogue or player's choice, include them in the otherCharacters array with detailed descriptions for their appearance. If the story involves moving to a new location, make sure to describe it in detail. Characters can have conversations and interactions with each other. Ensure you return ONLY the JSON object.`;
 
     console.log('Sending prompt to OpenAI');
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -130,7 +144,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a creative writing assistant that generates interactive story scenes. Always respond with valid JSON that matches the requested structure exactly. Create unique and diverse scenes while maintaining character consistency.'
+            content: 'You are a creative writing assistant that generates interactive story scenes with multiple characters. Always respond with valid JSON that matches the requested structure exactly. Create unique and diverse scenes while maintaining character consistency and enabling natural character interactions.'
           },
           { role: 'user', content: prompt }
         ],
@@ -176,7 +190,7 @@ serve(async (req) => {
     // Detect if location has changed
     const locationChanged = currentScene ? 
       await detectLocationChange(currentScene, sceneContent) : 
-      true; // First scene always generates new background
+      true;
 
     // Only generate new background image if location has changed
     if (locationChanged) {
@@ -187,16 +201,37 @@ serve(async (req) => {
 
     // Only generate new character image if there's no existing character
     if (!storyCharacter) {
-      console.log('Generating character image for:', parsedScene.character.name);
+      console.log('Generating main character image for:', parsedScene.character.name);
       const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`;
       parsedScene.character.image = await generateImageFromPrompt(characterDescription, true);
+    }
+
+    // Generate images for new characters
+    const newCharacters = [];
+    if (parsedScene.otherCharacters?.length > 0) {
+      for (const char of parsedScene.otherCharacters) {
+        const existingChar = storyCharacters?.find(c => c.name === char.name);
+        if (!existingChar) {
+          console.log('Generating new character image for:', char.name);
+          const characterDescription = `${char.name} - A ${genre} character with distinct features and expressions`;
+          char.image = await generateImageFromPrompt(characterDescription, true);
+          newCharacters.push({
+            name: char.name,
+            image: char.image,
+            gender: char.gender
+          });
+        } else {
+          char.image = existingChar.image;
+        }
+      }
     }
 
     console.log('Successfully generated and validated scene with images');
     return new Response(
       JSON.stringify({ 
         scene: JSON.stringify(parsedScene),
-        locationChanged 
+        locationChanged,
+        newCharacters: newCharacters.length > 0 ? newCharacters : undefined
       }), 
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

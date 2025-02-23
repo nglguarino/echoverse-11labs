@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -17,7 +18,9 @@ const InteractiveMovie = () => {
     storyBackground,
     setStoryBackground,
     storyCharacter,
-    setStoryCharacter
+    setStoryCharacter,
+    storyCharacters,
+    addStoryCharacter
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
@@ -27,7 +30,7 @@ const InteractiveMovie = () => {
   const chunksRef = useRef<Blob[]>([]);
 
   const generateScene = async (choice?: string) => {
-    if (isGenerating) return; // Prevent multiple simultaneous generations
+    if (isGenerating) return;
     
     console.log('Generating scene with:', { genre, currentScene, choice });
     setIsGenerating(true);
@@ -39,7 +42,8 @@ const InteractiveMovie = () => {
           currentScene,
           lastChoice: choice,
           storyCharacter,
-          currentBackground: storyBackground // Pass current background to help with location context
+          storyCharacters,
+          currentBackground: storyBackground
         }
       });
 
@@ -52,18 +56,23 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
-      // Handle initial scene setup
       if (!currentScene && !storyBackground) {
         setStoryBackground(newScene.background);
       }
       
-      // Check if location has changed and update background if needed
       if (data.locationChanged) {
-        console.log('Location has changed, updating background to:', newScene.background);
+        console.log('Location changed, updating background to:', newScene.background);
         setStoryBackground(newScene.background);
       } else if (storyBackground) {
-        // If location hasn't changed, keep the current background
         newScene.background = storyBackground;
+      }
+
+      // Handle new characters
+      if (data.newCharacters) {
+        data.newCharacters.forEach((character: any) => {
+          console.log('Adding new character:', character);
+          addStoryCharacter(character);
+        });
       }
 
       if (!storyCharacter) {
@@ -79,7 +88,13 @@ const InteractiveMovie = () => {
       const gender = storyCharacter?.gender || newScene.character.gender;
       console.log('Character gender for voice selection:', gender);
       newScene.character.voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
-      console.log('Voice ID set to:', newScene.character.voiceId);
+
+      if (newScene.otherCharacters) {
+        newScene.otherCharacters = newScene.otherCharacters.map(char => ({
+          ...char,
+          voiceId: char.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM'
+        }));
+      }
 
       if (currentScene) {
         addToHistory(currentScene);
@@ -320,23 +335,50 @@ const InteractiveMovie = () => {
                 transition={{ delay: 0.5 }}
               >
                 <div className="flex gap-8">
-                  <motion.div 
-                    className="w-48 shrink-0"
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.8 }}
-                  >
-                    <img 
-                      src={currentScene.character.image} 
-                      alt={currentScene.character.name}
-                      className="w-48 h-48 object-cover rounded-lg shadow-lg"
-                    />
-                  </motion.div>
+                  <div className="flex flex-col gap-4">
+                    <motion.div 
+                      className="w-48 shrink-0"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      <img 
+                        src={currentScene.character.image} 
+                        alt={currentScene.character.name}
+                        className="w-48 h-48 object-cover rounded-lg shadow-lg"
+                      />
+                    </motion.div>
+                    {currentScene.otherCharacters?.map((char, index) => (
+                      <motion.div 
+                        key={index}
+                        className="w-48 shrink-0"
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.8 + (index + 1) * 0.2 }}
+                      >
+                        <img 
+                          src={char.image} 
+                          alt={char.name}
+                          className="w-48 h-48 object-cover rounded-lg shadow-lg"
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
 
                   <div className="flex-1">
-                    <h3 className="text-2xl font-semibold text-white mb-4">{currentScene.character.name}</h3>
                     <div className="space-y-6">
-                      <p className="text-lg text-white">{currentScene.character.dialogue}</p>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <h3 className="text-2xl font-semibold text-white">{currentScene.character.name}</h3>
+                          <p className="text-lg text-white">{currentScene.character.dialogue}</p>
+                        </div>
+                        {currentScene.otherCharacters?.map((char, index) => (
+                          <div key={index} className="space-y-2">
+                            <h3 className="text-2xl font-semibold text-white">{char.name}</h3>
+                            <p className="text-lg text-white">{char.dialogue}</p>
+                          </div>
+                        ))}
+                      </div>
                       
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center">
