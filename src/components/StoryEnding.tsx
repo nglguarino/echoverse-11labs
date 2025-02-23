@@ -1,4 +1,3 @@
-
 import { useMovieStore, StoryEnding as StoryEndingType } from '@/stores/movieStore';
 import { motion } from 'framer-motion';
 import { FileText, ArrowRight, Trophy, Skull } from 'lucide-react';
@@ -11,6 +10,7 @@ const StoryEnding = () => {
     const transcript = sceneHistory.map((scene, index) => `
 Scene ${index + 1}:
 ${scene.character.name}: ${scene.character.dialogue}
+You: ${scene.choices ? `Chose to "${scene.choices[0]}"` : ""}
 `).join('\n');
 
     const blob = new Blob([transcript], { type: 'text/plain' });
@@ -26,6 +26,23 @@ ${scene.character.name}: ${scene.character.dialogue}
 
   const handleContinue = () => {
     resetStoryEnding();
+  };
+
+  const formatEndingMessage = (message: string): string => {
+    if (!message) return "";
+    
+    if (message.trim().toLowerCase().startsWith("you")) {
+      return message;
+    }
+    
+    const cleanMessage = message
+      .replace(/^[^.!?]*(?:name|character)/, "You")
+      .replace(/\b(?:he|she|they)\b/i, "you")
+      .replace(/\b(?:has|have)\b/i, "have")
+      .replace(/\b(?:was|were)\b/i, "were")
+      .trim();
+
+    return cleanMessage.charAt(0).toUpperCase() + cleanMessage.slice(1);
   };
 
   return (
@@ -56,7 +73,7 @@ ${scene.character.name}: ${scene.character.dialogue}
           </h2>
           
           <p className="text-cinema-text/80 text-xl md:text-2xl font-medium tracking-wide leading-relaxed">
-            {storyEnding?.message}
+            {storyEnding ? formatEndingMessage(storyEnding.message) : ''}
           </p>
           
           {storyEnding?.achievement && (
