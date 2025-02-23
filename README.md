@@ -1,4 +1,4 @@
-Inspiration
+## Inspiration
 "Choose Your Own Adventure" books, the Black Mirror special "Bandersnatch". Everyone loves to play with interactive stories. We can now elevate this experience with AI agents (or even better, AI directors).
 
 It was particluarly challenging to create the AI director logic, that has to:
@@ -8,7 +8,7 @@ It was particluarly challenging to create the AI director logic, that has to:
 • keep track of every interaction, updating the plot accordingly
 • determine which player's choice would lead to the ending scenes (win or game-over)
 
-What it does
+## What it does:
 Echoverse is an AI-powered interactive storytelling app where you shape the narrative through your choices.
 
 What makes it special is that each scene is brought to life with:
@@ -17,7 +17,7 @@ What makes it special is that each scene is brought to life with:
 • Characters speaking with nuanced tones, thanks to ElevenLabs
 • Multiple ways to interact (text, voice, or choices)
 
-Tech stack
+## Tech stack:
 I built it entirely with Lovable, never had to open any IDE.
 
 Frontend Core:
@@ -40,7 +40,7 @@ Supabase
 AI & Voice Services:
 OpenAI API (Story generation) ElevenLabs API (Text-to-speech) OpenAI Whisper (Speech-to-text) fal API (characters and backgrounds generation)
 
-What's next for Echoverse:
+## What's next for Echoverse:
 A few technical improvements:
 • adding background music and sound effects
 • upgrading the director's logic to handle more than one characters per story
