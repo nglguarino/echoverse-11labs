@@ -53,7 +53,8 @@ const InteractiveMovie = () => {
           lastChoice: choice,
           storyCharacter,
           currentBackground: storyBackground,
-          ignoreEnding: hasShownEnding // Use hasShownEnding to determine if we should ignore endings
+          ignoreEnding: hasShownEnding, // Only ignore endings if we've already shown one
+          sceneCount: currentScene?.id || 0 // Send the current scene count to help with pacing
         }
       });
 
@@ -61,8 +62,12 @@ const InteractiveMovie = () => {
       
       console.log('Scene generation response:', data);
 
+      // Check for ending if we haven't shown one yet
       if (data.ending && !hasShownEnding) {
         console.log('Ending received:', data.ending);
+        if (currentScene) {
+          addToHistory(currentScene); // Add the last scene to history before showing ending
+        }
         setStoryEnding(data.ending);
         return;
       }
