@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -334,7 +333,14 @@ const InteractiveMovie = () => {
                       
                       <div className="flex flex-col gap-4">
                         <div className="flex justify-end items-center">
-                          <div className="flex gap-4">
+                          <div className="flex gap-4 items-center">
+                            <button
+                              className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                              onClick={isRecording ? stopVoiceInput : startVoiceInput}
+                              disabled={isGenerating || isListening}
+                            >
+                              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                            </button>
                             {currentScene.choices.map((choice, index) => (
                               <button
                                 key={index}
@@ -345,15 +351,6 @@ const InteractiveMovie = () => {
                                 {choice}
                               </button>
                             ))}
-                          </div>
-                          <div className="ml-4">
-                            <button
-                              className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                              onClick={isRecording ? stopVoiceInput : startVoiceInput}
-                              disabled={isGenerating || isListening}
-                            >
-                              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                            </button>
                           </div>
                         </div>
                         
