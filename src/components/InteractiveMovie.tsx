@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -312,63 +313,64 @@ const InteractiveMovie = () => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <div className="flex gap-8 items-start">
-                  <div className="w-48 shrink-0">
-                    <h3 className="text-2xl font-semibold text-white mb-4">{currentScene.character.name}</h3>
-                    <motion.div 
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.8 }}
-                    >
-                      <img 
-                        src={currentScene.character.image} 
-                        alt={currentScene.character.name}
-                        className="w-48 h-48 object-cover rounded-lg shadow-lg"
-                      />
-                    </motion.div>
-                  </div>
+                <div className="flex gap-8">
+                  <motion.div 
+                    className="w-48 shrink-0"
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <img 
+                      src={currentScene.character.image} 
+                      alt={currentScene.character.name}
+                      className="w-48 h-48 object-cover rounded-lg shadow-lg"
+                    />
+                  </motion.div>
 
-                  <div className="flex-1 space-y-6">
-                    <p className="text-lg text-white">{currentScene.character.dialogue}</p>
-                    
-                    <div className="flex flex-col gap-4">
-                      <div className="flex gap-4 justify-end items-center">
-                        {currentScene.choices.map((choice, index) => (
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-semibold text-white mb-4">{currentScene.character.name}</h3>
+                    <div className="space-y-6">
+                      <p className="text-lg text-white">{currentScene.character.dialogue}</p>
+                      
+                      <div className="flex flex-col gap-4">
+                        <div className="flex gap-4 justify-end items-center">
+                          {currentScene.choices.map((choice, index) => (
+                            <button
+                              key={index}
+                              className="cinema-button"
+                              onClick={() => handleChoice(choice)}
+                              disabled={isGenerating || isListening}
+                            >
+                              {choice}
+                            </button>
+                          ))}
                           <button
-                            key={index}
-                            className="cinema-button"
-                            onClick={() => handleChoice(choice)}
+                            className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                            onClick={isRecording ? stopVoiceInput : startVoiceInput}
                             disabled={isGenerating || isListening}
                           >
-                            {choice}
+                            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                           </button>
-                        ))}
-                        <button
-                          className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                          onClick={isRecording ? stopVoiceInput : startVoiceInput}
-                          disabled={isGenerating || isListening}
-                        >
-                          {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                        </button>
+                        </div>
+                        
+                        <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
+                          <input
+                            type="text"
+                            value={customChoice}
+                            onChange={(e) => setCustomChoice(e.target.value)}
+                            placeholder="Write your own choice..."
+                            className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                            disabled={isGenerating || isListening}
+                          />
+                          <button
+                            type="submit"
+                            className="cinema-button"
+                            disabled={isGenerating || isListening || !customChoice.trim()}
+                          >
+                            Make Choice
+                          </button>
+                        </form>
                       </div>
-                      
-                      <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
-                        <input
-                          type="text"
-                          value={customChoice}
-                          onChange={(e) => setCustomChoice(e.target.value)}
-                          placeholder="Write your own choice..."
-                          className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
-                          disabled={isGenerating || isListening}
-                        />
-                        <button
-                          type="submit"
-                          className="cinema-button"
-                          disabled={isGenerating || isListening || !customChoice.trim()}
-                        >
-                          Make Choice
-                        </button>
-                      </form>
                     </div>
                   </div>
                 </div>
