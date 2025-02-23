@@ -1,69 +1,49 @@
-# Welcome to your Lovable project
+Inspiration
+"Choose Your Own Adventure" books, the Black Mirror special "Bandersnatch". Everyone loves to play with interactive stories. We can now elevate this experience with AI agents (or even better, AI directors).
 
-## Project info
+It was particluarly challenging to create the AI director logic, that has to:
+• choose randomly a genre for the plot
+• create characters and settings
+• create dialogues
+• keep track of every interaction, updating the plot accordingly
+• determine which player's choice would lead to the ending scenes (win or game-over)
 
-**URL**: https://lovable.dev/projects/5341068b-71fe-470b-8127-3b7760a96509
+What it does
+Echoverse is an AI-powered interactive storytelling app where you shape the narrative through your choices.
 
-## How can I edit this code?
+What makes it special is that each scene is brought to life with:
+• An AI agent (or director) that creates every time different plots, settings, and characters
+• AI generated visuals (backgrounds and characters portraits)
+• Characters speaking with nuanced tones, thanks to ElevenLabs
+• Multiple ways to interact (text, voice, or choices)
 
-There are several ways of editing your application.
+Tech stack
+I built it entirely with Lovable, never had to open any IDE.
 
-**Use Lovable**
+Frontend Core:
+React 18 (JavaScript framework)
+TypeScript (Type-safety)
+Vite (Build tool)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5341068b-71fe-470b-8127-3b7760a96509) and start prompting.
+Styling & UI:
+TailwindCSS (Utility-first CSS)
+Shadcn/ui (Component library)
+Framer Motion (Animations)
+Lucide React (Icons)
 
-Changes made via Lovable will be committed automatically to this repo.
+State Management:
+Zustand (Application state) React Router (Navigation)
 
-**Use your preferred IDE**
+Backend Services:
+Supabase
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+AI & Voice Services:
+OpenAI API (Story generation) ElevenLabs API (Text-to-speech) OpenAI Whisper (Speech-to-text) fal API (characters and backgrounds generation)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+What's next for Echoverse:
+A few technical improvements:
+• adding background music and sound effects
+• upgrading the director's logic to handle more than one characters per story
+• improving the transcript, including also the player's choices
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5341068b-71fe-470b-8127-3b7760a96509) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Also, the initial idea was to create a first-person interactive movie, but turned out to be too complex to build for this hackathon; will check its feasibility again.
