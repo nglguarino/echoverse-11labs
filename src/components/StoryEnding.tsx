@@ -32,18 +32,19 @@ You: ${scene.choices ? `Chose to "${scene.choices[0]}"` : ""}
   const formatEndingMessage = (message: string): string => {
     if (!message) return "";
     
-    // If message already starts with "You", return as is
-    if (message.trim().toLowerCase().startsWith("you")) {
+    // If message already starts with "Your", return as is
+    if (message.trim().toLowerCase().startsWith("your")) {
       return message;
     }
     
     const cleanMessage = message
       // Replace possessive forms first (e.g., "Evelyn's loud screams" -> "Your loud screams")
       .replace(/^([A-Za-z]+)'s/, "Your")
-      // Replace character name at start of sentence with "You"
+      // Replace character name at start of sentence with "Your" if followed by a noun
+      .replace(/^[A-Z][a-z]+\s+(decision|choice|actions?|attempt|response)/, "Your $1")
+      // If not a possession/noun case, replace with "You"
       .replace(/^[A-Z][a-z]+\s/, "You ")
       // Replace pronouns and fix verb agreement
-      .replace(/\b(?:he|she|they)\b/gi, "you")
       .replace(/\b(?:his|her|their)\b/gi, "your")
       .replace(/\b(?:has|have)\b/gi, "have")
       .replace(/\b(?:was|were)\b/gi, "were")
