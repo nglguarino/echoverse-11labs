@@ -353,7 +353,7 @@ const InteractiveMovie = () => {
                           </button>
                         </div>
                         
-                        <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
+                        <div className="flex gap-4 justify-end items-center">
                           <input
                             type="text"
                             value={customChoice}
@@ -364,12 +364,12 @@ const InteractiveMovie = () => {
                           />
                           <button
                             type="submit"
-                            className="cinema-button"
+                            className="cinema-button whitespace-nowrap"
                             disabled={isGenerating || isListening || !customChoice.trim()}
                           >
                             Make Choice
                           </button>
-                        </form>
+                        </div>
                       </div>
                     </div>
                   </div>
