@@ -1,3 +1,4 @@
+
 import { useMovieStore, StoryEnding as StoryEndingType } from '@/stores/movieStore';
 import { motion } from 'framer-motion';
 import { FileText, ArrowRight, Trophy, Skull } from 'lucide-react';
@@ -31,15 +32,21 @@ You: ${scene.choices ? `Chose to "${scene.choices[0]}"` : ""}
   const formatEndingMessage = (message: string): string => {
     if (!message) return "";
     
+    // If message already starts with "You", return as is
     if (message.trim().toLowerCase().startsWith("you")) {
       return message;
     }
     
     const cleanMessage = message
-      .replace(/^[^.!?]*(?:name|character)/, "You")
-      .replace(/\b(?:he|she|they)\b/i, "you")
-      .replace(/\b(?:has|have)\b/i, "have")
-      .replace(/\b(?:was|were)\b/i, "were")
+      // Replace possessive forms first (e.g., "Evelyn's loud screams" -> "Your loud screams")
+      .replace(/^([A-Za-z]+)'s/, "Your")
+      // Replace character name at start of sentence with "You"
+      .replace(/^[A-Z][a-z]+\s/, "You ")
+      // Replace pronouns and fix verb agreement
+      .replace(/\b(?:he|she|they)\b/gi, "you")
+      .replace(/\b(?:his|her|their)\b/gi, "your")
+      .replace(/\b(?:has|have)\b/gi, "have")
+      .replace(/\b(?:was|were)\b/gi, "were")
       .trim();
 
     return cleanMessage.charAt(0).toUpperCase() + cleanMessage.slice(1);
