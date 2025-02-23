@@ -333,7 +333,7 @@ const InteractiveMovie = () => {
                       <p className="text-lg text-white">{currentScene.character.dialogue}</p>
                       
                       <div className="flex flex-col gap-4">
-                        <div className="flex justify-end items-center">
+                        <div className="flex items-center">
                           <div className="flex gap-4">
                             {currentScene.choices.map((choice, index) => (
                               <button
@@ -348,23 +348,8 @@ const InteractiveMovie = () => {
                           </div>
                         </div>
                         
-                        <div className="flex justify-end items-center">
+                        <div className="flex items-center">
                           <div className="flex gap-4">
-                            <input
-                              type="text"
-                              value={customChoice}
-                              onChange={(e) => setCustomChoice(e.target.value)}
-                              placeholder="Write your own choice..."
-                              className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
-                              disabled={isGenerating || isListening}
-                            />
-                            <button
-                              onClick={handleCustomChoice}
-                              className="cinema-button whitespace-nowrap"
-                              disabled={isGenerating || isListening || !customChoice.trim()}
-                            >
-                              Make Choice
-                            </button>
                             <button
                               className={`cinema-button aspect-square h-[42px] inline-flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
                               onClick={isRecording ? stopVoiceInput : startVoiceInput}
@@ -375,6 +360,21 @@ const InteractiveMovie = () => {
                                 <Mic className="h-5 w-5 text-white" />
                               }
                             </button>
+                            <button
+                              onClick={handleCustomChoice}
+                              className="cinema-button whitespace-nowrap"
+                              disabled={isGenerating || isListening || !customChoice.trim()}
+                            >
+                              Make Choice
+                            </button>
+                            <input
+                              type="text"
+                              value={customChoice}
+                              onChange={(e) => setCustomChoice(e.target.value)}
+                              placeholder="Write your own choice..."
+                              className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                              disabled={isGenerating || isListening}
+                            />
                           </div>
                         </div>
                       </div>
