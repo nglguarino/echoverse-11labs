@@ -41,7 +41,7 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          Let your imagination drive the story.
+          An AI-powered interactive storytelling experience
         </motion.p>
 
         <motion.div
