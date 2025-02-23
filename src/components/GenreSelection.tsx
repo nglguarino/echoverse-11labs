@@ -11,11 +11,23 @@ interface GenreSelectionProps {
 const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
   const [isMuted, setIsMuted] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const hoverSoundRef = useRef<HTMLAudioElement>(null);
+  const clickSoundRef = useRef<HTMLAudioElement>(null);
 
   const handleStart = () => {
+    if (!isMuted && clickSoundRef.current) {
+      clickSoundRef.current.play();
+    }
     const genres = ['action', 'thriller', 'romance'];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
     onSelect(randomGenre);
+  };
+
+  const handleHover = () => {
+    if (!isMuted && hoverSoundRef.current) {
+      hoverSoundRef.current.currentTime = 0; // Reset sound to start
+      hoverSoundRef.current.play();
+    }
   };
 
   const toggleMute = () => {
@@ -34,6 +46,12 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
     if (audioRef.current) {
       audioRef.current.volume = 0.2;
     }
+    if (hoverSoundRef.current) {
+      hoverSoundRef.current.volume = 0.15;
+    }
+    if (clickSoundRef.current) {
+      clickSoundRef.current.volume = 0.2;
+    }
   }, []);
 
   return (
@@ -42,6 +60,16 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
         ref={audioRef}
         src="/ambient-cinematic.wav"
         loop
+        preload="auto"
+      />
+      <audio
+        ref={hoverSoundRef}
+        src="/hover.wav"
+        preload="auto"
+      />
+      <audio
+        ref={clickSoundRef}
+        src="/click.wav"
         preload="auto"
       />
 
@@ -107,6 +135,7 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
             className="relative px-10 py-5 text-xl rounded-lg text-white font-medium tracking-wide
                        transition-all duration-300 transform hover:scale-105"
             onClick={handleStart}
+            onMouseEnter={handleHover}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
