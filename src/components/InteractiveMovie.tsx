@@ -344,16 +344,18 @@ const InteractiveMovie = () => {
                               {choice}
                             </button>
                           ))}
-                          <button
-                            className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                            onClick={isRecording ? stopVoiceInput : startVoiceInput}
-                            disabled={isGenerating || isListening}
-                          >
-                            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                          </button>
+                          <div className="ml-4">
+                            <button
+                              className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                              onClick={isRecording ? stopVoiceInput : startVoiceInput}
+                              disabled={isGenerating || isListening}
+                            >
+                              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </div>
                         
-                        <div className="flex gap-4 justify-end items-center">
+                        <div className="flex gap-4 justify-end items-center pr-[52px]">
                           <input
                             type="text"
                             value={customChoice}
@@ -363,7 +365,7 @@ const InteractiveMovie = () => {
                             disabled={isGenerating || isListening}
                           />
                           <button
-                            type="submit"
+                            onClick={handleCustomChoice}
                             className="cinema-button whitespace-nowrap"
                             disabled={isGenerating || isListening || !customChoice.trim()}
                           >
