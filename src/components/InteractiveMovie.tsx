@@ -5,6 +5,11 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, MicOff } from 'lucide-react';
 
+const VOICE_IDS = {
+  MALE: 'CwhRBWXzGAHq8TQ4Fs17',   // Roger - clear male voice
+  FEMALE: 'EXAVITQu4vr4xnSDxMaL'  // Sarah - clear female voice
+} as const;
+
 const InteractiveMovie = () => {
   const { toast } = useToast();
   const { 
@@ -27,7 +32,7 @@ const InteractiveMovie = () => {
   const chunksRef = useRef<Blob[]>([]);
 
   const generateScene = async (choice?: string) => {
-    if (isGenerating) return; // Prevent multiple simultaneous generations
+    if (isGenerating) return;
     
     console.log('Generating scene with:', { genre, currentScene, choice });
     setIsGenerating(true);
@@ -52,17 +57,14 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
-      // Handle initial scene setup
       if (!currentScene && !storyBackground) {
         setStoryBackground(newScene.background);
       }
       
-      // Check if location has changed and update background if needed
       if (data.locationChanged) {
         console.log('Location has changed, updating background to:', newScene.background);
         setStoryBackground(newScene.background);
       } else if (storyBackground) {
-        // If location hasn't changed, keep the current background
         newScene.background = storyBackground;
       }
 
@@ -78,15 +80,9 @@ const InteractiveMovie = () => {
 
       const gender = storyCharacter?.gender || newScene.character.gender;
       console.log('Character gender for voice selection:', gender);
-      // Set appropriate voice based on gender
-      if (gender === 'female') {
-        // Sarah's voice for female characters
-        newScene.character.voiceId = 'EXAVITQu4vr4xnSDxMaL';
-      } else {
-        // Josh's voice for male characters
-        newScene.character.voiceId = '21m00Tcm4TlvDq8ikWAM';
-      }
-      console.log('Voice ID set to:', newScene.character.voiceId);
+      
+      newScene.character.voiceId = gender === 'female' ? VOICE_IDS.FEMALE : VOICE_IDS.MALE;
+      console.log('Voice ID set to:', newScene.character.voiceId, 'for gender:', gender);
 
       if (currentScene) {
         addToHistory(currentScene);
@@ -124,7 +120,7 @@ const InteractiveMovie = () => {
     
     try {
       const gender = currentScene.character.gender;
-      const voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      const voiceId = gender === 'female' ? VOICE_IDS.FEMALE : VOICE_IDS.MALE;
       
       console.log('Speaking dialogue with:', {
         gender: gender,
@@ -267,7 +263,6 @@ const InteractiveMovie = () => {
     }
 
     return () => {
-      // Cleanup any ongoing processes when component unmounts
       if (audioRef.current) {
         audioRef.current.pause();
       }
