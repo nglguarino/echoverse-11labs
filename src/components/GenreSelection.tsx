@@ -1,5 +1,5 @@
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkle } from 'lucide-react';
 
 interface GenreSelectionProps {
   onSelect: (genre: string) => void;
@@ -48,51 +48,6 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             transition={{ duration: 0.8 }}
             className="text-center max-w-lg mx-auto p-8 relative z-10 -mt-32"
           >
-            <motion.div 
-              className="mb-6 relative h-24"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              {[...Array(6)].map((_, index) => {
-                const angle = (index * Math.PI * 2) / 6;
-                const radius = 8 + index * 6; // Increasing radius for spiral effect
-                const delay = index * 0.1;
-                
-                return (
-                  <motion.div
-                    key={index}
-                    className="absolute left-1/2 top-1/2"
-                    initial={{ 
-                      x: 0,
-                      y: 0,
-                      opacity: 0,
-                      scale: 0
-                    }}
-                    animate={{ 
-                      x: Math.cos(angle) * radius,
-                      y: Math.sin(angle) * radius,
-                      opacity: 1 - (index * 0.15),
-                      scale: 1 - (index * 0.1),
-                      rotate: 360
-                    }}
-                    transition={{ 
-                      duration: 20,
-                      repeat: Infinity,
-                      ease: "linear",
-                      delay: delay
-                    }}
-                  >
-                    <Sparkle 
-                      className={`w-8 h-8 ${
-                        index % 2 === 0 ? 'text-[#1EAEDB]' : 'text-[#9b87f5]'
-                      }`}
-                    />
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-
             <motion.h1 
               className="text-6xl md:text-7xl font-bold mb-6 text-center bg-clip-text text-transparent 
                          bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] to-[#1EAEDB] animate-text
