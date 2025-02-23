@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -308,28 +307,26 @@ const InteractiveMovie = () => {
             
             <div className="absolute bottom-0 left-0 right-0 p-8">
               <motion.div 
-                className="cinema-card max-w-4xl mx-auto space-y-4"
+                className="cinema-card max-w-4xl mx-auto"
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                {/* Character name at the top */}
-                <h3 className="text-2xl font-semibold text-white pl-60">{currentScene.character.name}</h3>
-
-                {/* Main content area with image and dialogue */}
-                <div className="flex gap-8">
-                  <motion.div 
-                    className="relative w-48 h-48 -mt-16" // Negative margin to pull image up
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.8 }}
-                  >
-                    <img 
-                      src={currentScene.character.image} 
-                      alt={currentScene.character.name}
-                      className="w-full h-full object-cover rounded-lg shadow-lg"
-                    />
-                  </motion.div>
+                <div className="flex gap-8 items-start">
+                  <div className="w-48 shrink-0">
+                    <h3 className="text-2xl font-semibold text-white mb-4">{currentScene.character.name}</h3>
+                    <motion.div 
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      <img 
+                        src={currentScene.character.image} 
+                        alt={currentScene.character.name}
+                        className="w-48 h-48 object-cover rounded-lg shadow-lg"
+                      />
+                    </motion.div>
+                  </div>
 
                   <div className="flex-1 space-y-6">
                     <p className="text-lg text-white">{currentScene.character.dialogue}</p>
