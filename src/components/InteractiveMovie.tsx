@@ -235,7 +235,7 @@ const InteractiveMovie = () => {
       console.log('Starting initial scene generation');
       generateScene();
     }
-  }, [genre, currentScene, isGenerating]);
+  }, [genre]);
 
   useEffect(() => {
     if (currentScene && !isGenerating) {
@@ -247,24 +247,6 @@ const InteractiveMovie = () => {
       return () => clearTimeout(timer);
     }
   }, [currentScene, isGenerating]);
-
-  useEffect(() => {
-    if (genre && !currentScene && !isGenerating) {
-      generateScene();
-    }
-  }, [genre]);
-
-  const handleChoice = (choice: string) => {
-    generateScene(choice);
-  };
-
-  const handleCustomChoice = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (customChoice.trim()) {
-      generateScene(customChoice.trim());
-      setCustomChoice("");
-    }
-  };
 
   if (!currentScene) return null;
 
