@@ -27,6 +27,7 @@ const InteractiveMovie = () => {
   const chunksRef = useRef<Blob[]>([]);
 
   const generateScene = async (choice?: string) => {
+    console.log('Generating scene with:', { genre, currentScene, choice });
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-scene', {
@@ -39,6 +40,8 @@ const InteractiveMovie = () => {
       });
 
       if (error) throw error;
+      
+      console.log('Scene generation response:', data);
       
       const newScene = {
         id: currentScene ? currentScene.id + 1 : 1,
@@ -220,6 +223,19 @@ const InteractiveMovie = () => {
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
   };
+
+  useEffect(() => {
+    console.log('InteractiveMovie useEffect triggered:', {
+      genre,
+      currentScene,
+      isGenerating
+    });
+    
+    if (genre && !currentScene && !isGenerating) {
+      console.log('Starting initial scene generation');
+      generateScene();
+    }
+  }, [genre, currentScene, isGenerating]);
 
   useEffect(() => {
     if (currentScene && !isGenerating) {
