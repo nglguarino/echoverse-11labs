@@ -6,20 +6,18 @@ import InteractiveMovie from '@/components/InteractiveMovie';
 import { useMovieStore } from '@/stores/movieStore';
 
 const Index = () => {
-  const { setGenre, genre } = useMovieStore();
+  const { setGenre, genre, currentScene } = useMovieStore();
   const [isStarting, setIsStarting] = useState(false);
 
   const handleGenreSelect = async (selectedGenre: string) => {
     setIsStarting(true);
-    // Add a small delay for the transition
-    await new Promise(resolve => setTimeout(resolve, 1500));
     setGenre(selectedGenre);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <AnimatePresence mode="wait">
-        {!genre ? (
+        {!genre || (genre && !currentScene) ? (
           <motion.div
             key="genre-selection"
             initial={{ opacity: 0 }}
