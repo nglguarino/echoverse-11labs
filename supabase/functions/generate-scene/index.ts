@@ -1,3 +1,4 @@
+
 // @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -59,6 +60,34 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
   }
 }
 
+async function detectLocationChange(prevScene: any, newScene: string): Promise<boolean> {
+  const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a story analyzer that detects location changes in narrative scenes. Return only "true" if the location has significantly changed or "false" if it has not.'
+        },
+        {
+          role: 'user',
+          content: `Previous scene: ${JSON.stringify(prevScene)}\nNew scene: ${newScene}\n\nHas the location changed significantly? Answer only with true or false.`
+        }
+      ],
+    }),
+  });
+
+  const data = await openAIResponse.json();
+  const result = data.choices[0].message.content.toLowerCase().trim() === 'true';
+  console.log('Location change detection result:', result);
+  return result;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -87,7 +116,7 @@ serve(async (req) => {
     ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
     ${lastChoice ? `Player chose: ${lastChoice}` : ''}
     
-    Make it engaging and consistent with the ${genre} genre. Ensure you return ONLY the JSON object.`;
+    Make it engaging and consistent with the ${genre} genre. If the story involves moving to a new location, make sure to describe it in detail. Ensure you return ONLY the JSON object.`;
 
     console.log('Sending prompt to OpenAI');
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -95,7 +124,6 @@ serve(async (req) => {
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
@@ -129,8 +157,6 @@ serve(async (req) => {
       parsedScene = JSON.parse(sceneContent);
       
       if (storyCharacter) {
-        // Ensure character consistency
-        console.log('Setting character info from storyCharacter:', storyCharacter);
         parsedScene.character = {
           ...parsedScene.character,
           name: storyCharacter.name,
@@ -138,12 +164,6 @@ serve(async (req) => {
           gender: storyCharacter.gender
         };
       }
-
-      // Set voice ID based on final gender
-      const finalGender = parsedScene.character.gender;
-      console.log('Setting voice ID for gender:', finalGender);
-      parsedScene.character.voiceId = finalGender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
-      
     } catch (e) {
       console.error('Failed to parse scene content as JSON:', e);
       throw new Error('Generated content is not valid JSON');
@@ -153,10 +173,17 @@ serve(async (req) => {
       throw new Error('Generated scene is missing required fields');
     }
 
-    // Generate background image based on the scene description
-    console.log('Generating background image for:', parsedScene.background);
-    const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background);
-    parsedScene.background = backgroundImageUrl;
+    // Detect if location has changed
+    const locationChanged = currentScene ? 
+      await detectLocationChange(currentScene, sceneContent) : 
+      true; // First scene always generates new background
+
+    // Only generate new background image if location has changed
+    if (locationChanged) {
+      console.log('Location changed, generating new background image for:', parsedScene.background);
+      const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background);
+      parsedScene.background = backgroundImageUrl;
+    }
 
     // Only generate new character image if there's no existing character
     if (!storyCharacter) {
@@ -166,9 +193,15 @@ serve(async (req) => {
     }
 
     console.log('Successfully generated and validated scene with images');
-    return new Response(JSON.stringify({ scene: JSON.stringify(parsedScene) }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ 
+        scene: JSON.stringify(parsedScene),
+        locationChanged 
+      }), 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
 
   } catch (error) {
     console.error('Error in generate-scene function:', error);

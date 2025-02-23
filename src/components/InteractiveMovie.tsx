@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -39,7 +38,8 @@ const InteractiveMovie = () => {
           genre,
           currentScene,
           lastChoice: choice,
-          storyCharacter
+          storyCharacter,
+          currentBackground: storyBackground // Pass current background to help with location context
         }
       });
 
@@ -52,8 +52,18 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
+      // Handle initial scene setup
       if (!currentScene && !storyBackground) {
         setStoryBackground(newScene.background);
+      }
+      
+      // Check if location has changed and update background if needed
+      if (data.locationChanged) {
+        console.log('Location has changed, updating background to:', newScene.background);
+        setStoryBackground(newScene.background);
+      } else if (storyBackground) {
+        // If location hasn't changed, keep the current background
+        newScene.background = storyBackground;
       }
 
       if (!storyCharacter) {
@@ -73,10 +83,6 @@ const InteractiveMovie = () => {
 
       if (currentScene) {
         addToHistory(currentScene);
-      }
-      
-      if (storyBackground) {
-        newScene.background = storyBackground;
       }
       
       setCurrentScene(newScene);
