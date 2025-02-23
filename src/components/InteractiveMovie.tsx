@@ -22,7 +22,6 @@ const InteractiveMovie = () => {
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [activeCharacterIndex, setActiveCharacterIndex] = useState(-1);
   const audioRef = useRef<HTMLAudioElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -52,13 +51,18 @@ const InteractiveMovie = () => {
 
       if (!storyCharacter) {
         const character = {
-          name: newScene.mainCharacter.name,
-          image: newScene.mainCharacter.image,
-          gender: newScene.mainCharacter.gender
+          name: newScene.character.name,
+          image: newScene.character.image,
+          gender: newScene.character.gender
         };
         console.log('Setting initial character:', character);
         setStoryCharacter(character);
       }
+
+      const gender = storyCharacter?.gender || newScene.character.gender;
+      console.log('Character gender for voice selection:', gender);
+      newScene.character.voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      console.log('Voice ID set to:', newScene.character.voiceId);
 
       if (currentScene) {
         addToHistory(currentScene);
@@ -81,29 +85,33 @@ const InteractiveMovie = () => {
     }
   };
 
-  const speakDialogue = async (character: any, index: number) => {
-    if (!character?.dialogue) return;
+  const speakDialogue = async () => {
+    if (!currentScene?.character?.dialogue) return;
     setIsListening(true);
-    setActiveCharacterIndex(index);
     
     try {
-      const voiceId = character.gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      const gender = currentScene.character.gender;
+      const voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
       
       console.log('Speaking dialogue with:', {
-        gender: character.gender,
+        gender: gender,
         voiceId: voiceId,
-        text: character.dialogue
+        text: currentScene.character.dialogue
       });
 
       const { data, error } = await supabase.functions.invoke('text-to-speech', {
         body: { 
-          text: character.dialogue,
+          text: currentScene.character.dialogue,
           voiceId: voiceId
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Edge Function error:', error);
+        throw error;
+      }
 
+      console.log('Creating audio blob...');
       const binaryString = atob(data.data);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
@@ -113,9 +121,20 @@ const InteractiveMovie = () => {
       const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
+      console.log('Setting up audio playback...');
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
+        audioRef.current.onloadedmetadata = () => {
+          console.log('Audio metadata loaded:', {
+            duration: audioRef.current?.duration,
+            readyState: audioRef.current?.readyState
+          });
+        };
+        audioRef.current.onerror = (e) => {
+          console.error('Audio element error:', e);
+        };
         await audioRef.current.play();
+        console.log('Audio playback started');
       }
 
     } catch (error) {
@@ -127,7 +146,6 @@ const InteractiveMovie = () => {
       });
     } finally {
       setIsListening(false);
-      setActiveCharacterIndex(-1);
     }
   };
 
@@ -205,14 +223,12 @@ const InteractiveMovie = () => {
 
   useEffect(() => {
     if (currentScene && !isGenerating) {
-      const playNextCharacter = async (index = 0) => {
-        const characters = [currentScene.mainCharacter, ...currentScene.supportingCharacters];
-        if (index < characters.length) {
-          await speakDialogue(characters[index], index);
-          setTimeout(() => playNextCharacter(index + 1), 1000);
-        }
-      };
-      playNextCharacter();
+      console.log('New scene detected, starting automatic speech...');
+      const timer = setTimeout(() => {
+        speakDialogue();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
     }
   }, [currentScene, isGenerating]);
 
@@ -236,8 +252,6 @@ const InteractiveMovie = () => {
 
   if (!currentScene) return null;
 
-  const allCharacters = [currentScene.mainCharacter, ...currentScene.supportingCharacters];
-
   return (
     <motion.div 
       className="fixed inset-0 bg-black"
@@ -258,93 +272,67 @@ const InteractiveMovie = () => {
         
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <motion.div 
-            className="cinema-card max-w-4xl mx-auto"
+            className="cinema-card max-w-4xl mx-auto flex items-end gap-8"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <div className="flex flex-wrap gap-6 mb-6">
-              {allCharacters.map((character, index) => (
-                <motion.div 
-                  key={index}
-                  className={`relative ${activeCharacterIndex === index ? 'scale-105' : ''}`}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 * index }}
-                >
-                  <div className="w-24 h-24 relative">
-                    <img 
-                      src={character.image} 
-                      alt={character.name}
-                      className="w-full h-full object-cover rounded-lg shadow-lg"
-                    />
-                    {activeCharacterIndex === index && (
-                      <motion.div 
-                        className="absolute inset-0 border-2 border-cinema-accent rounded-lg"
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      />
-                    )}
-                  </div>
-                  <p className="text-sm font-medium mt-2 text-center">{character.name}</p>
-                </motion.div>
-              ))}
-            </div>
+            <motion.div 
+              className="relative w-48 h-48"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              <img 
+                src={currentScene.character.image} 
+                alt={currentScene.character.name}
+                className="w-full h-full object-cover rounded-lg shadow-lg"
+              />
+            </motion.div>
 
-            <div className="space-y-6">
-              {allCharacters.map((character, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 * index }}
-                  className={`p-4 rounded-lg ${
-                    activeCharacterIndex === index ? 'bg-cinema-accent/20' : 'bg-black/40'
-                  }`}
-                >
-                  <p className="text-lg">{character.dialogue}</p>
-                </motion.div>
-              ))}
-            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold mb-4">{currentScene.character.name}</h3>
+              <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
               
-            <div className="flex flex-col gap-4 mt-6">
-              <div className="flex gap-4 justify-end items-center">
-                {currentScene.choices.map((choice, index) => (
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-4 justify-end items-center">
+                  {currentScene.choices.map((choice, index) => (
+                    <button
+                      key={index}
+                      className="cinema-button"
+                      onClick={() => handleChoice(choice)}
+                      disabled={isGenerating || isListening}
+                    >
+                      {choice}
+                    </button>
+                  ))}
                   <button
-                    key={index}
-                    className="cinema-button"
-                    onClick={() => generateScene(choice)}
+                    className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                    onClick={isRecording ? stopVoiceInput : startVoiceInput}
                     disabled={isGenerating || isListening}
                   >
-                    {choice}
+                    {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   </button>
-                ))}
-                <button
-                  className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                  onClick={isRecording ? stopVoiceInput : startVoiceInput}
-                  disabled={isGenerating || isListening}
-                >
-                  {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                </button>
+                </div>
+                
+                <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
+                  <input
+                    type="text"
+                    value={customChoice}
+                    onChange={(e) => setCustomChoice(e.target.value)}
+                    placeholder="Write your own choice..."
+                    className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                    disabled={isGenerating || isListening}
+                  />
+                  <button
+                    type="submit"
+                    className="cinema-button"
+                    disabled={isGenerating || isListening || !customChoice.trim()}
+                  >
+                    Make Choice
+                  </button>
+                </form>
               </div>
-              
-              <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
-                <input
-                  type="text"
-                  value={customChoice}
-                  onChange={(e) => setCustomChoice(e.target.value)}
-                  placeholder="Write your own choice..."
-                  className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
-                  disabled={isGenerating || isListening}
-                />
-                <button
-                  type="submit"
-                  className="cinema-button"
-                  disabled={isGenerating || isListening || !customChoice.trim()}
-                >
-                  Make Choice
-                </button>
-              </form>
             </div>
           </motion.div>
         </div>
