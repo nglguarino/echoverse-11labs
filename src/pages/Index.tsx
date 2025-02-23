@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GenreSelection from '@/components/GenreSelection';
 import InteractiveMovie from '@/components/InteractiveMovie';
@@ -7,15 +6,13 @@ import { useMovieStore } from '@/stores/movieStore';
 
 const Index = () => {
   const { genre, currentScene, isGenerating, setGenre } = useMovieStore();
-  const [isStarting, setIsStarting] = useState(false);
 
   const handleGenreSelect = async (selectedGenre: string) => {
-    setIsStarting(true);
     setGenre(selectedGenre);
   };
 
-  const showGenreSelection = !genre || (genre && !currentScene && !isGenerating);
-  const showMovie = genre && (currentScene || isGenerating);
+  const showGenreSelection = !genre;
+  const showMovie = genre;
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -29,7 +26,7 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="w-full"
           >
-            <GenreSelection onSelect={handleGenreSelect} isStarting={isStarting} />
+            <GenreSelection onSelect={handleGenreSelect} isStarting={false} />
           </motion.div>
         ) : showMovie && (
           <motion.div
