@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
-import { Mic, MicOff, Home } from 'lucide-react';
+import { Mic, MicOff, ArrowLeft } from 'lucide-react';
 import StoryEnding from '@/components/StoryEnding';
 import { useNavigate } from 'react-router-dom';
 
@@ -59,7 +59,6 @@ const InteractiveMovie = () => {
       
       console.log('Scene generation response:', data);
 
-      // Only check for ending if we haven't shown one yet
       if (data.ending && !hasShownEnding) {
         setStoryEnding(data.ending);
         return;
@@ -70,16 +69,13 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
-      // Only set initial background for the very first scene
       if (!currentScene && !storyBackground) {
         console.log('Setting initial background for first scene');
         setStoryBackground(newScene.background);
       } else if (data.locationChanged) {
-        // Only update background if there was an explicit agreement to change location
         console.log('Location change agreed upon, updating background to:', newScene.background);
         setStoryBackground(newScene.background);
       } else {
-        // Keep the current background for all other cases
         console.log('No explicit location change, keeping current background:', storyBackground);
         newScene.background = storyBackground || newScene.background;
       }
@@ -326,11 +322,11 @@ const InteractiveMovie = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             onClick={() => navigate('/')}
-            className="absolute top-4 left-4 z-50 cinema-button text-white flex items-center gap-2 
-                       bg-black/50 backdrop-blur-sm hover:bg-black/70 transition-all duration-300"
+            className="absolute bottom-[212px] left-8 z-50 cinema-button aspect-square h-[42px] 
+                       inline-flex items-center justify-center bg-black/50 backdrop-blur-sm 
+                       hover:bg-black/70 hover:border hover:border-violet-400 transition-all duration-300"
           >
-            <Home className="w-5 h-5" />
-            Back to Home
+            <ArrowLeft className="w-5 h-5 text-white" />
           </motion.button>
 
           <audio ref={audioRef} className="hidden" />
