@@ -333,17 +333,19 @@ const InteractiveMovie = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <motion.button
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            onClick={handleHomeClick}
-            className="absolute top-8 left-[20%] md:left-[25%] lg:left-[30%] xl:left-[32%] z-50 cinema-button aspect-square h-[42px] 
-                       inline-flex items-center justify-center bg-black/50 backdrop-blur-sm 
-                       hover:bg-black/70 hover:border hover:border-violet-400 transition-all duration-300"
-          >
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </motion.button>
+          <div className="max-w-4xl mx-auto relative">
+            <motion.button
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              onClick={handleHomeClick}
+              className="absolute top-8 left-8 z-50 cinema-button aspect-square h-[42px] 
+                         inline-flex items-center justify-center bg-black/50 backdrop-blur-sm 
+                         hover:bg-black/70 hover:border hover:border-violet-400 transition-all duration-300"
+            >
+              <ArrowLeft className="w-5 h-5 text-white" />
+            </motion.button>
+          </div>
 
           <audio ref={audioRef} className="hidden" />
           <div 
