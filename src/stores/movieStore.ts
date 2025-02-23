@@ -4,17 +4,14 @@ import { create } from 'zustand';
 export interface Scene {
   id: number;
   background: string;
-  characters: Array<{
-    id: string;
+  character: {
     name: string;
+    voiceId: string;
+    dialogue: string;
     image: string;
-    voiceId?: string;
     gender: 'male' | 'female';
-    currentDialogue?: string;
-  }>;
-  activeCharacterId?: string; // Track who is currently speaking
+  };
   choices: string[];
-  isComplete: boolean; // Track if all characters have spoken
 }
 
 interface MovieState {
@@ -34,10 +31,9 @@ interface MovieState {
   addToHistory: (scene: Scene) => void;
   setStoryBackground: (background: string) => void;
   setStoryCharacter: (character: { name: string; image: string; gender: 'male' | 'female' }) => void;
-  advanceDialogue: () => void;
 }
 
-export const useMovieStore = create<MovieState>((set, get) => ({
+export const useMovieStore = create<MovieState>((set) => ({
   genre: null,
   isGenerating: false,
   currentScene: null,
@@ -52,32 +48,4 @@ export const useMovieStore = create<MovieState>((set, get) => ({
   })),
   setStoryBackground: (background) => set({ storyBackground: background }),
   setStoryCharacter: (character) => set({ storyCharacter: character }),
-  advanceDialogue: () => set((state) => {
-    if (!state.currentScene) return state;
-
-    const currentScene = state.currentScene;
-    const characters = currentScene.characters;
-
-    // Find current speaking character index
-    const currentSpeakerIndex = characters.findIndex(char => char.id === currentScene.activeCharacterId);
-    
-    // Move to next character or mark scene as complete
-    if (currentSpeakerIndex === characters.length - 1) {
-      return {
-        currentScene: {
-          ...currentScene,
-          isComplete: true,
-          activeCharacterId: undefined
-        }
-      };
-    } else {
-      const nextSpeaker = characters[currentSpeakerIndex + 1];
-      return {
-        currentScene: {
-          ...currentScene,
-          activeCharacterId: nextSpeaker.id
-        }
-      };
-    }
-  })
 }));
