@@ -275,6 +275,7 @@ const InteractiveMovie = () => {
     setStoryCharacter(null);
     setStoryEnding(null);
     setGenre(null);
+    useMovieStore.setState({ hasShownEnding: false }); // Reset the hasShownEnding flag
     navigate('/');
   };
 
