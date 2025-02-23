@@ -1,12 +1,12 @@
 ## Inspiration
 "Choose Your Own Adventure" books, the Black Mirror special "Bandersnatch". Everyone loves to play with interactive stories. We can now elevate this experience with AI agents (or even better, AI directors).
 
-It was particluarly challenging to create the AI director logic, that has to:
-• choose randomly a genre for the plot
-• create characters and settings
-• create dialogues
-• keep track of every interaction, updating the plot accordingly
-• determine which player's choice would lead to the ending scenes (win or game-over)
+It was particluarly challenging to create the AI director logic, that has to: <br>
+• choose randomly a genre for the plot <br>
+• create characters and settings <br>
+• create dialogues <br>
+• keep track of every interaction, updating the plot accordingly <br>
+• determine which player's choice would lead to the ending scenes (win or game-over) <br>
 
 ## What it does:
 Echoverse is an AI-powered interactive storytelling app where you shape the narrative through your choices.
