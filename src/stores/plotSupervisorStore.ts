@@ -30,21 +30,23 @@ export interface PlotEvent {
   timestamp: number;
 }
 
+type StoryPhase = 'introduction' | 'rising_action' | 'climax' | 'falling_action' | 'resolution';
+
 interface PlotSupervisorState {
   characters: { [id: string]: Character };
   plotEvents: PlotEvent[];
   tension: number; // 0-100
-  storyPhase: 'introduction' | 'rising_action' | 'climax' | 'falling_action' | 'resolution';
+  storyPhase: StoryPhase;
   currentThemes: string[];
   addCharacter: (character: Character) => void;
   updateCharacter: (id: string, updates: Partial<Character>) => void;
   addPlotEvent: (event: PlotEvent) => void;
   setTension: (tension: number) => void;
-  setStoryPhase: (phase: typeof PlotSupervisorState.prototype.storyPhase) => void;
+  setStoryPhase: (phase: StoryPhase) => void;
   setCurrentThemes: (themes: string[]) => void;
 }
 
-export const usePlotSupervisorStore = create<PlotSupervisorState>((set, get) => ({
+export const usePlotSupervisorStore = create<PlotSupervisorState>((set) => ({
   characters: {},
   plotEvents: [],
   tension: 0,

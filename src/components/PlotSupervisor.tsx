@@ -56,7 +56,15 @@ export const PlotSupervisor = () => {
           timestamp: Date.now()
         };
         addPlotEvent(event);
-        setCurrentScene({ ...currentScene, isGameOver: true });
+        // Instead of modifying the scene directly, we'll use the proper movieStore method
+        if (currentScene) {
+          const updatedScene = {
+            ...currentScene,
+            choices: [],
+            dialogue: [...(currentScene.dialogue || []), analysis.endReason]
+          };
+          setCurrentScene(updatedScene);
+        }
         return;
       }
 
