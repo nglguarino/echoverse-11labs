@@ -366,11 +366,14 @@ const InteractiveMovie = () => {
                               Make Choice
                             </button>
                             <button
-                              className={`cinema-button w-[42px] h-[42px] flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                              className={`cinema-button aspect-square h-[42px] inline-flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
                               onClick={isRecording ? stopVoiceInput : startVoiceInput}
                               disabled={isGenerating || isListening}
                             >
-                              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                              {isRecording ? 
+                                <MicOff className="h-5 w-5 text-white" /> : 
+                                <Mic className="h-5 w-5 text-white" />
+                              }
                             </button>
                           </div>
                         </div>
