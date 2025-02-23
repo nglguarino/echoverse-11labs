@@ -1,1 +1,4 @@
-project_id = "vqssibajqoqmtdpxustg"
+
+project_id = "your-project-id"
+[functions.generate-music]
+verify_jwt = false
