@@ -103,10 +103,20 @@ const InteractiveMovie = () => {
 
       if (error) throw error;
       
+      if (!data?.scene) {
+        throw new Error('No scene data received from server');
+      }
+
+      const parsedScene = JSON.parse(data.scene);
+      
+      if (!parsedScene?.characters?.length) {
+        throw new Error('Invalid scene data: missing characters');
+      }
+
       const newScene = {
         id: currentScene ? currentScene.id + 1 : 1,
-        ...JSON.parse(data.scene),
-        activeCharacterId: JSON.parse(data.scene).characters[0]?.id,
+        ...parsedScene,
+        activeCharacterId: parsedScene.characters[0].id,
         isComplete: false
       };
 
