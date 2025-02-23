@@ -10,7 +10,6 @@ interface GenreSelectionProps {
 
 const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
   const [isMuted, setIsMuted] = useState(true);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const hoverSoundRef = useRef<HTMLAudioElement>(null);
   const clickSoundRef = useRef<HTMLAudioElement>(null);
 
@@ -31,21 +30,11 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
   };
 
   const toggleMute = () => {
-    if (audioRef.current) {
-      if (isMuted) {
-        audioRef.current.play();
-      } else {
-        audioRef.current.pause();
-      }
-      setIsMuted(!isMuted);
-    }
+    setIsMuted(!isMuted);
   };
 
   useEffect(() => {
     // Initialize audio with appropriate volumes
-    if (audioRef.current) {
-      audioRef.current.volume = 0.2; // Keep background music at a moderate level
-    }
     if (hoverSoundRef.current) {
       hoverSoundRef.current.volume = 1.0; // Maximum volume for hover sound
     }
@@ -56,12 +45,6 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden font-inter">
-      <audio
-        ref={audioRef}
-        src="/ambient-cinematic.wav"
-        loop
-        preload="auto"
-      />
       <audio
         ref={hoverSoundRef}
         src="/click-21156.mp3"
@@ -78,7 +61,7 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
         className="fixed top-6 right-6 p-3 rounded-full bg-black/20 backdrop-blur-sm 
                  border border-white/10 hover:bg-black/30 transition-all duration-300
                  text-white/80 hover:text-white z-50"
-        aria-label={isMuted ? "Unmute background music" : "Mute background music"}
+        aria-label={isMuted ? "Unmute sound effects" : "Mute sound effects"}
       >
         {isMuted ? <Volume2 size={20} /> : <VolumeX size={20} />}
       </button>
