@@ -21,14 +21,14 @@ What makes it special is that each scene is brought to life with:
 I built it entirely with Lovable, never had to open any IDE.
 
 Frontend Core:
-React 18 (JavaScript framework)
-TypeScript (Type-safety)
+React 18 (JavaScript framework),
+TypeScript (Type-safety),
 Vite (Build tool)
 
 Styling & UI:
-TailwindCSS (Utility-first CSS)
-Shadcn/ui (Component library)
-Framer Motion (Animations)
+TailwindCSS (Utility-first CSS),
+Shadcn/ui (Component library),
+Framer Motion (Animations),
 Lucide React (Icons)
 
 State Management:
@@ -38,12 +38,12 @@ Backend Services:
 Supabase
 
 AI & Voice Services:
-OpenAI API (Story generation) ElevenLabs API (Text-to-speech) OpenAI Whisper (Speech-to-text) fal API (characters and backgrounds generation)
+OpenAI API (Story generation), ElevenLabs API (Text-to-speech), OpenAI Whisper (Speech-to-text), fal API (characters and backgrounds generation)
 
 ## What's next for Echoverse:
-A few technical improvements:
-• adding background music and sound effects
-• upgrading the director's logic to handle more than one characters per story
-• improving the transcript, including also the player's choices
+A few technical improvements: <br>
+• adding background music and sound effects <br>
+• upgrading the director's logic to handle more than one characters per story <br>
+• improving the transcript, including also the player's choices <br>
 
 Also, the initial idea was to create a first-person interactive movie, but turned out to be too complex to build for this hackathon; will check its feasibility again.
