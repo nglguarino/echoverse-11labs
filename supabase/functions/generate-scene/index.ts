@@ -1,3 +1,4 @@
+
 // @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -14,8 +15,6 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
     throw new Error('FAL_KEY environment variable is not set');
   }
 
-  console.log(`Generating ${isCharacter ? 'character' : 'background'} image with prompt:`, prompt);
-  
   try {
     fal.config({
       credentials: falKey
@@ -33,28 +32,17 @@ async function generateImageFromPrompt(prompt: string, isCharacter: boolean = fa
       seed: Math.floor(Math.random() * 1000000)
     };
 
-    console.log('Sending request with input:', input);
-
     const result = await fal.subscribe('110602490-fast-sdxl', {
       input
     });
 
-    console.log('Received response from Fal:', result);
-
     if (!result?.images?.[0]?.url) {
-      console.error('Invalid response format:', result);
       throw new Error('No image URL in response');
     }
 
-    console.log('Successfully generated image URL:', result.images[0].url);
     return result.images[0].url;
   } catch (error) {
-    console.error('Detailed error in generateImageFromPrompt:', {
-      error: error.toString(),
-      stack: error.stack,
-      name: error.name,
-      message: error.message
-    });
+    console.error('Error generating image:', error);
     throw error;
   }
 }
@@ -65,108 +53,49 @@ serve(async (req) => {
   }
 
   try {
-    const { genre, currentScene, lastChoice, storyCharacter } = await req.json();
-    console.log('Received request with storyCharacter:', storyCharacter);
+    const { genre, currentScene, lastChoice } = await req.json();
+    console.log('Received request:', { genre, currentScene, lastChoice });
     
-    const characterContext = storyCharacter 
-      ? `Continue the story with ${storyCharacter.name}, who is a ${storyCharacter.gender} character. Keep their gender as ${storyCharacter.gender}.`
-      : 'Create a new character for this story. Clearly specify if they are male or female.';
+    // Create initial scene if there's no current scene
+    const isFirstScene = !currentScene;
     
-    const prompt = `Generate the next scene for an interactive ${genre} story. ${characterContext} Format the response as a JSON object with the following structure:
-    {
-      "background": "description of the scene setting",
-      "character": {
-        "name": "${storyCharacter?.name || '[character name]'}",
-        "dialogue": "character's dialogue",
-        "image": "${storyCharacter?.image || '[character image url]'}",
-        "gender": "${storyCharacter?.gender || 'male'}"
-      },
-      "choices": ["choice 1", "choice 2"]
+    let backgroundPrompt = isFirstScene
+      ? `A ${genre} scene setting suitable for the opening of a story`
+      : `A ${genre} scene that would follow after ${lastChoice || 'the previous events'}`;
+
+    const backgroundUrl = await generateImageFromPrompt(backgroundPrompt);
+    console.log('Generated background URL:', backgroundUrl);
+
+    // Generate character if it's the first scene
+    let characterData;
+    if (isFirstScene) {
+      const characterPrompt = `A protagonist suitable for a ${genre} story`;
+      const characterImageUrl = await generateImageFromPrompt(characterPrompt, true);
+      characterData = {
+        id: "char1",
+        name: "Alex",
+        image: characterImageUrl,
+        gender: Math.random() > 0.5 ? "male" : "female",
+        currentDialogue: `This is where our ${genre} story begins...`
+      };
+    } else {
+      // Use existing character from current scene
+      characterData = currentScene.characters[0];
+      characterData.currentDialogue = `What should we do next in this ${genre} tale?`;
     }
 
-    ${currentScene ? `Previous scene: ${JSON.stringify(currentScene)}` : 'This is the start of the story.'}
-    ${lastChoice ? `Player chose: ${lastChoice}` : ''}
-    
-    Make it engaging and consistent with the ${genre} genre. Ensure you return ONLY the JSON object.`;
+    const sceneData = {
+      background: backgroundUrl,
+      characters: [characterData],
+      choices: [
+        `Continue exploring this ${genre} adventure`,
+        `Take a different approach to the story`
+      ]
+    };
 
-    console.log('Sending prompt to OpenAI');
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a creative writing assistant that generates interactive story scenes. Always respond with valid JSON that matches the requested structure exactly. Create unique and diverse scenes while maintaining character consistency.'
-          },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
+    console.log('Generated scene data:', sceneData);
 
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', await openAIResponse.text());
-      throw new Error('Failed to get response from OpenAI');
-    }
-
-    const data = await openAIResponse.json();
-    console.log('OpenAI response:', data);
-
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response format from OpenAI');
-    }
-
-    const sceneContent = data.choices[0].message.content;
-    console.log('Scene content:', sceneContent);
-
-    let parsedScene;
-    try {
-      parsedScene = JSON.parse(sceneContent);
-      
-      if (storyCharacter) {
-        // Ensure character consistency
-        console.log('Setting character info from storyCharacter:', storyCharacter);
-        parsedScene.character = {
-          ...parsedScene.character,
-          name: storyCharacter.name,
-          image: storyCharacter.image,
-          gender: storyCharacter.gender
-        };
-      }
-
-      // Set voice ID based on final gender
-      const finalGender = parsedScene.character.gender;
-      console.log('Setting voice ID for gender:', finalGender);
-      parsedScene.character.voiceId = finalGender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
-      
-    } catch (e) {
-      console.error('Failed to parse scene content as JSON:', e);
-      throw new Error('Generated content is not valid JSON');
-    }
-
-    if (!parsedScene.background || !parsedScene.character || !parsedScene.choices) {
-      throw new Error('Generated scene is missing required fields');
-    }
-
-    // Generate background image based on the scene description
-    console.log('Generating background image for:', parsedScene.background);
-    const backgroundImageUrl = await generateImageFromPrompt(parsedScene.background);
-    parsedScene.background = backgroundImageUrl;
-
-    // Only generate new character image if there's no existing character
-    if (!storyCharacter) {
-      console.log('Generating character image for:', parsedScene.character.name);
-      const characterDescription = `${parsedScene.character.name} - A ${genre} character with distinct features and expressions`;
-      parsedScene.character.image = await generateImageFromPrompt(characterDescription, true);
-    }
-
-    console.log('Successfully generated and validated scene with images');
-    return new Response(JSON.stringify({ scene: JSON.stringify(parsedScene) }), {
+    return new Response(JSON.stringify({ scene: JSON.stringify(sceneData) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
