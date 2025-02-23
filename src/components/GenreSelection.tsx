@@ -83,13 +83,13 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.8 }}
-              className="relative"
+              className="relative inline-block"
             >
               <motion.div
-                className="absolute -inset-1 bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] to-[#1EAEDB] 
-                           rounded-lg blur-lg opacity-75"
+                className="absolute inset-0 bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] to-[#1EAEDB] 
+                           rounded-lg blur-2xl opacity-50"
                 animate={{
-                  scale: [1, 1.1, 1],
+                  scale: [1, 1.2, 1],
                   opacity: [0.5, 0.8, 0.5]
                 }}
                 transition={{
@@ -99,10 +99,8 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
                 }}
               />
               <motion.button
-                className="relative bg-cinema-background/90 backdrop-blur-sm px-10 py-5 text-xl rounded-lg
-                           text-white font-medium tracking-wide w-full
-                           transition-all duration-300 transform border border-white/10
-                           hover:border-white/20 hover:bg-cinema-background/80"
+                className="relative px-10 py-5 text-xl rounded-lg text-white font-medium tracking-wide
+                           transition-all duration-300 transform hover:scale-105"
                 onClick={handleStart}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
