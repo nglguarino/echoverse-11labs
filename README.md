@@ -43,6 +43,7 @@ OpenAI API (Story generation), ElevenLabs API (Text-to-speech), OpenAI Whisper (
 ## What's next for Echoverse:
 A few technical improvements: <br>
 • adding background music and sound effects <br>
+• adapt the app for all device sizes (now it displays correctly only on laptops) <br>
 • upgrading the director's logic to handle more than one characters per story <br>
 • improving the transcript, including also the player's choices <br>
 
