@@ -1,7 +1,5 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
 
 interface GenreSelectionProps {
   onSelect: (genre: string) => void;
@@ -9,64 +7,14 @@ interface GenreSelectionProps {
 }
 
 const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
-  const [isMuted, setIsMuted] = useState(true);
-  const hoverSoundRef = useRef<HTMLAudioElement>(null);
-  const clickSoundRef = useRef<HTMLAudioElement>(null);
-
   const handleStart = () => {
-    if (!isMuted && clickSoundRef.current) {
-      clickSoundRef.current.currentTime = 0;
-      clickSoundRef.current.play().catch(error => console.log('Error playing click sound:', error));
-    }
     const genres = ['action', 'thriller', 'romance'];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
     onSelect(randomGenre);
   };
 
-  const handleHover = () => {
-    if (!isMuted && hoverSoundRef.current) {
-      hoverSoundRef.current.currentTime = 0;
-      hoverSoundRef.current.play().catch(error => console.log('Error playing hover sound:', error));
-    }
-  };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  useEffect(() => {
-    // Initialize audio with maximum volumes
-    if (hoverSoundRef.current) {
-      hoverSoundRef.current.volume = 1.0;
-    }
-    if (clickSoundRef.current) {
-      clickSoundRef.current.volume = 1.0;
-    }
-  }, []);
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden font-inter">
-      <audio
-        ref={hoverSoundRef}
-        src="/hover-button-287656.mp3"
-        preload="auto"
-      />
-      <audio
-        ref={clickSoundRef}
-        src="/click-21156.mp3"
-        preload="auto"
-      />
-
-      <button
-        onClick={toggleMute}
-        className="fixed top-6 right-6 p-3 rounded-full bg-black/20 backdrop-blur-sm 
-                 border border-white/10 hover:bg-black/30 transition-all duration-300
-                 text-white/80 hover:text-white z-50"
-        aria-label={isMuted ? "Unmute sound effects" : "Mute sound effects"}
-      >
-        {isMuted ? <Volume2 size={20} /> : <VolumeX size={20} />}
-      </button>
-
       <motion.div
         key="content"
         initial={{ opacity: 0, y: 20 }}
@@ -119,7 +67,6 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
             className="relative px-10 py-5 text-xl rounded-lg text-white font-medium tracking-wide
                        transition-all duration-300 transform hover:scale-105"
             onClick={handleStart}
-            onMouseEnter={handleHover}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

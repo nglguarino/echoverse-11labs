@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
-import { Mic, MicOff, ArrowLeft, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, ArrowLeft } from 'lucide-react';
 import StoryEnding from '@/components/StoryEnding';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,11 +31,9 @@ const InteractiveMovie = () => {
     hasShownEnding,
     setGenre,
   } = useMovieStore();
-  
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -280,41 +278,6 @@ const InteractiveMovie = () => {
     navigate('/');
   };
 
-  const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !audioRef.current.muted;
-      setIsMuted(!isMuted);
-    }
-  };
-
-  const playSceneMusic = async (scene: any) => {
-    try {
-      let moodDescription = `${genre} ${scene.character.dialogue}`; // Use scene context for music generation
-      
-      const { data, error } = await supabase.functions.invoke('generate-music', {
-        body: { 
-          mood: moodDescription,
-          duration: 30 // 30 seconds of music that will loop
-        }
-      });
-
-      if (error) throw error;
-
-      if (data.audioUrl) {
-        if (audioRef.current) {
-          audioRef.current.src = data.audioUrl;
-          audioRef.current.volume = 0.2;
-          audioRef.current.loop = true;
-          if (!isMuted) {
-            await audioRef.current.play();
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error playing scene music:', error);
-    }
-  };
-
   useEffect(() => {
     console.log('InteractiveMovie mount effect:', {
       genre,
@@ -339,9 +302,9 @@ const InteractiveMovie = () => {
 
   useEffect(() => {
     if (currentScene && !isGenerating) {
+      console.log('New scene detected, starting automatic speech...');
       const timer = setTimeout(() => {
         speakDialogue();
-        playSceneMusic(currentScene);
       }, 1000);
       
       return () => clearTimeout(timer);
@@ -382,17 +345,7 @@ const InteractiveMovie = () => {
             <ArrowLeft className="w-5 h-5 text-white" />
           </motion.button>
 
-          <button
-            onClick={toggleMute}
-            className="fixed top-8 right-8 z-50 cinema-button aspect-square h-[42px]
-                     inline-flex items-center justify-center bg-black/50 backdrop-blur-sm
-                     hover:bg-black/70 hover:border hover:border-violet-400 transition-all duration-300"
-          >
-            {isMuted ? <VolumeX className="w-5 h-5 text-white" /> : <Volume2 className="w-5 h-5 text-white" />}
-          </button>
-
           <audio ref={audioRef} className="hidden" />
-          
           <div 
             className="relative h-full"
             style={{
