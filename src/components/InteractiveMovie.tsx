@@ -262,6 +262,14 @@ const InteractiveMovie = () => {
     }
   };
 
+  const handleHomeClick = () => {
+    setCurrentScene(null);
+    setStoryBackground(null);
+    setStoryCharacter(null);
+    setStoryEnding(null);
+    navigate('/');
+  };
+
   useEffect(() => {
     console.log('InteractiveMovie mount effect:', {
       genre,
@@ -321,7 +329,7 @@ const InteractiveMovie = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            onClick={() => navigate('/')}
+            onClick={handleHomeClick}
             className="absolute top-8 left-8 z-50 cinema-button aspect-square h-[42px] 
                        inline-flex items-center justify-center bg-black/50 backdrop-blur-sm 
                        hover:bg-black/70 hover:border hover:border-violet-400 transition-all duration-300"
