@@ -50,33 +50,53 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             className="text-center max-w-lg mx-auto p-8 relative z-10 -mt-32"
           >
             <motion.div 
-              className="mb-6 relative"
+              className="mb-6 relative h-16"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <motion.div
-                className="absolute inset-0"
-                animate={{ 
-                  rotate: 360,
-                  scale: [1, 1.2, 1]
-                }}
-                transition={{ 
-                  rotate: {
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "linear"
-                  },
-                  scale: {
-                    duration: 3,
-                    repeat: Infinity,
-                    repeatType: "reverse"
-                  }
-                }}
-              >
-                <CircleDot className="w-16 h-16 mx-auto text-[#1EAEDB]" />
-              </motion.div>
-              <CircleDot className="w-16 h-16 mx-auto text-[#9b87f5] opacity-50" />
+              {[...Array(3)].map((_, index) => (
+                <motion.div
+                  key={index}
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                  animate={{ 
+                    rotate: 360,
+                    scale: [1, 1.2, 1],
+                    x: `calc(-50% + ${Math.cos(index * Math.PI / 1.5) * 20}px)`,
+                    y: `calc(-50% + ${Math.sin(index * Math.PI / 1.5) * 20}px)`
+                  }}
+                  transition={{ 
+                    rotate: {
+                      duration: 20,
+                      repeat: Infinity,
+                      ease: "linear"
+                    },
+                    scale: {
+                      duration: 3,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    },
+                    x: {
+                      duration: 3,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    },
+                    y: {
+                      duration: 3,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }
+                  }}
+                >
+                  <CircleDot 
+                    className={`w-16 h-16 mx-auto ${
+                      index === 0 ? 'text-[#1EAEDB]' : 
+                      index === 1 ? 'text-[#9b87f5] opacity-70' : 
+                      'text-[#1EAEDB] opacity-40'
+                    }`}
+                  />
+                </motion.div>
+              ))}
             </motion.div>
 
             <motion.h1 
