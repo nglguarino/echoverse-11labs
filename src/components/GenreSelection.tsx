@@ -1,5 +1,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 interface GenreSelectionProps {
   onSelect: (genre: string) => void;
@@ -7,14 +9,52 @@ interface GenreSelectionProps {
 }
 
 const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   const handleStart = () => {
     const genres = ['action', 'thriller', 'romance'];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
     onSelect(randomGenre);
   };
 
+  const toggleMute = () => {
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+      setIsMuted(!isMuted);
+    }
+  };
+
+  useEffect(() => {
+    // Initialize audio with low volume
+    if (audioRef.current) {
+      audioRef.current.volume = 0.2;
+    }
+  }, []);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden font-inter">
+      <audio
+        ref={audioRef}
+        src="/ambient-cinematic.mp3"
+        loop
+        preload="auto"
+      />
+
+      <button
+        onClick={toggleMute}
+        className="fixed top-6 right-6 p-3 rounded-full bg-black/20 backdrop-blur-sm 
+                 border border-white/10 hover:bg-black/30 transition-all duration-300
+                 text-white/80 hover:text-white z-50"
+        aria-label={isMuted ? "Unmute background music" : "Mute background music"}
+      >
+        {isMuted ? <Volume2 size={20} /> : <VolumeX size={20} />}
+      </button>
+
       <motion.div
         key="content"
         initial={{ opacity: 0, y: 20 }}
