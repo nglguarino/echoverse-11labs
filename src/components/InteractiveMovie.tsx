@@ -401,7 +401,7 @@ const InteractiveMovie = () => {
                         <div className="flex items-center">
                           <div className="flex gap-4">
                             <button
-                              className={`cinema-button h-[46px] aspect-square inline-flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                              className={`cinema-button h-[48px] aspect-square inline-flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
                               onClick={isRecording ? stopVoiceInput : startVoiceInput}
                               disabled={isGenerating || isListening}
                             >
