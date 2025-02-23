@@ -181,7 +181,7 @@ const InteractiveMovie = () => {
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div>
-                <p className="text-sm font-medium">{char.name}</p>
+                <p className="text-sm font-medium text-white">{char.name}</p>
                 <Badge variant={char.id === currentScene.activeCharacterId ? "default" : "secondary"}>
                   {char.id === currentScene.activeCharacterId ? "Speaking" : "Waiting"}
                 </Badge>
@@ -201,7 +201,7 @@ const InteractiveMovie = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-black/60 p-6 rounded-lg"
+                className="bg-black/60 p-6 rounded-lg text-white"
               >
                 {currentScene.characters.find(
                   char => char.id === currentScene.activeCharacterId
@@ -222,6 +222,8 @@ const InteractiveMovie = () => {
                     key={index}
                     onClick={() => handleChoice(choice)}
                     disabled={isGenerating || isListening}
+                    variant="secondary"
+                    className="bg-white/10 hover:bg-white/20 text-white"
                   >
                     {choice}
                   </Button>
@@ -240,6 +242,8 @@ const InteractiveMovie = () => {
                 <Button
                   type="submit"
                   disabled={isGenerating || isListening || !customChoice.trim() || !currentScene.isComplete}
+                  variant="secondary"
+                  className="bg-white/10 hover:bg-white/20 text-white"
                 >
                   Make Choice
                 </Button>
