@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -307,66 +308,71 @@ const InteractiveMovie = () => {
             
             <div className="absolute bottom-0 left-0 right-0 p-8">
               <motion.div 
-                className="cinema-card max-w-4xl mx-auto flex items-end gap-8"
+                className="cinema-card max-w-4xl mx-auto space-y-4"
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <motion.div 
-                  className="relative w-48 h-48"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <img 
-                    src={currentScene.character.image} 
-                    alt={currentScene.character.name}
-                    className="w-full h-full object-cover rounded-lg shadow-lg"
-                  />
-                </motion.div>
+                {/* Character name at the top */}
+                <h3 className="text-2xl font-semibold text-white pl-60">{currentScene.character.name}</h3>
 
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-4 text-white">{currentScene.character.name}</h3>
-                  <p className="text-lg mb-6 text-white">{currentScene.character.dialogue}</p>
-                  
-                  <div className="flex flex-col gap-4">
-                    <div className="flex gap-4 justify-end items-center">
-                      {currentScene.choices.map((choice, index) => (
+                {/* Main content area with image and dialogue */}
+                <div className="flex gap-8">
+                  <motion.div 
+                    className="relative w-48 h-48 -mt-16" // Negative margin to pull image up
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <img 
+                      src={currentScene.character.image} 
+                      alt={currentScene.character.name}
+                      className="w-full h-full object-cover rounded-lg shadow-lg"
+                    />
+                  </motion.div>
+
+                  <div className="flex-1 space-y-6">
+                    <p className="text-lg text-white">{currentScene.character.dialogue}</p>
+                    
+                    <div className="flex flex-col gap-4">
+                      <div className="flex gap-4 justify-end items-center">
+                        {currentScene.choices.map((choice, index) => (
+                          <button
+                            key={index}
+                            className="cinema-button"
+                            onClick={() => handleChoice(choice)}
+                            disabled={isGenerating || isListening}
+                          >
+                            {choice}
+                          </button>
+                        ))}
                         <button
-                          key={index}
-                          className="cinema-button"
-                          onClick={() => handleChoice(choice)}
+                          className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                          onClick={isRecording ? stopVoiceInput : startVoiceInput}
                           disabled={isGenerating || isListening}
                         >
-                          {choice}
+                          {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                         </button>
-                      ))}
-                      <button
-                        className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                        onClick={isRecording ? stopVoiceInput : startVoiceInput}
-                        disabled={isGenerating || isListening}
-                      >
-                        {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                      </button>
+                      </div>
+                      
+                      <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
+                        <input
+                          type="text"
+                          value={customChoice}
+                          onChange={(e) => setCustomChoice(e.target.value)}
+                          placeholder="Write your own choice..."
+                          className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                          disabled={isGenerating || isListening}
+                        />
+                        <button
+                          type="submit"
+                          className="cinema-button"
+                          disabled={isGenerating || isListening || !customChoice.trim()}
+                        >
+                          Make Choice
+                        </button>
+                      </form>
                     </div>
-                    
-                    <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
-                      <input
-                        type="text"
-                        value={customChoice}
-                        onChange={(e) => setCustomChoice(e.target.value)}
-                        placeholder="Write your own choice..."
-                        className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
-                        disabled={isGenerating || isListening}
-                      />
-                      <button
-                        type="submit"
-                        className="cinema-button"
-                        disabled={isGenerating || isListening || !customChoice.trim()}
-                      >
-                        Make Choice
-                      </button>
-                    </form>
                   </div>
                 </div>
               </motion.div>
