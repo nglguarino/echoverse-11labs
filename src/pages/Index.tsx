@@ -1,23 +1,20 @@
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GenreSelection from '@/components/GenreSelection';
 import InteractiveMovie from '@/components/InteractiveMovie';
+import { PlotSupervisor } from '@/components/PlotSupervisor';
 import { useMovieStore } from '@/stores/movieStore';
 
 const Index = () => {
   const { setGenre, genre } = useMovieStore();
-  const [isStarting, setIsStarting] = useState(false);
 
   const handleGenreSelect = async (selectedGenre: string) => {
-    setIsStarting(true);
-    // Add a small delay for the transition
-    await new Promise(resolve => setTimeout(resolve, 1500));
     setGenre(selectedGenre);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
+      <PlotSupervisor />
       <AnimatePresence mode="wait">
         {!genre ? (
           <motion.div
@@ -28,7 +25,7 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="w-full"
           >
-            <GenreSelection onSelect={handleGenreSelect} isStarting={isStarting} />
+            <GenreSelection onSelect={handleGenreSelect} isStarting={false} />
           </motion.div>
         ) : (
           <motion.div
