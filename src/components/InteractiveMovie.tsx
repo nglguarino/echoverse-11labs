@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from "@/integrations/supabase/client";
-import { Mic, MicOff } from 'lucide-react';
+import { Mic, MicOff, Home } from 'lucide-react';
 import StoryEnding from '@/components/StoryEnding';
+import { useNavigate } from 'react-router-dom';
 
 const VOICE_IDS = {
   MALE: 'CwhRBWXzGAHq8TQ4Fs17',   // Roger - clear male voice
@@ -12,6 +13,7 @@ const VOICE_IDS = {
 } as const;
 
 const InteractiveMovie = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { 
     genre, 
@@ -319,6 +321,18 @@ const InteractiveMovie = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
+          <motion.button
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            onClick={() => navigate('/')}
+            className="absolute top-4 left-4 z-50 cinema-button text-white flex items-center gap-2 
+                       bg-black/50 backdrop-blur-sm hover:bg-black/70 transition-all duration-300"
+          >
+            <Home className="w-5 h-5" />
+            Back to Home
+          </motion.button>
+
           <audio ref={audioRef} className="hidden" />
           <div 
             className="relative h-full"
