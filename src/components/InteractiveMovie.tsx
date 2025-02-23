@@ -27,8 +27,11 @@ const InteractiveMovie = () => {
   const chunksRef = useRef<Blob[]>([]);
 
   const generateScene = async (choice?: string) => {
+    if (isGenerating) return; // Prevent multiple simultaneous generations
+    
     console.log('Generating scene with:', { genre, currentScene, choice });
     setIsGenerating(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('generate-scene', {
         body: { 
@@ -76,6 +79,7 @@ const InteractiveMovie = () => {
       }
       
       setCurrentScene(newScene);
+      console.log('New scene set:', newScene);
     } catch (error) {
       console.error('Error generating scene:', error);
       toast({
@@ -237,7 +241,7 @@ const InteractiveMovie = () => {
   };
 
   useEffect(() => {
-    console.log('InteractiveMovie useEffect triggered:', {
+    console.log('InteractiveMovie mount effect:', {
       genre,
       currentScene,
       isGenerating
@@ -247,7 +251,17 @@ const InteractiveMovie = () => {
       console.log('Starting initial scene generation');
       generateScene();
     }
-  }, [genre]);
+
+    return () => {
+      // Cleanup any ongoing processes when component unmounts
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (currentScene && !isGenerating) {
@@ -260,94 +274,107 @@ const InteractiveMovie = () => {
     }
   }, [currentScene, isGenerating]);
 
-  if (!currentScene) return null;
-
   return (
-    <motion.div 
-      className="fixed inset-0 bg-black"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <audio ref={audioRef} className="hidden" />
-      <div 
-        className="relative h-full"
-        style={{
-          backgroundImage: `url(${currentScene.background})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-        
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <motion.div 
-            className="cinema-card max-w-4xl mx-auto flex items-end gap-8"
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
+    <AnimatePresence mode="wait">
+      {isGenerating && !currentScene ? (
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black flex items-center justify-center"
+        >
+          <div className="text-white text-2xl">Generating your story...</div>
+        </motion.div>
+      ) : currentScene && (
+        <motion.div 
+          key="scene"
+          className="fixed inset-0 bg-black"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <audio ref={audioRef} className="hidden" />
+          <div 
+            className="relative h-full"
+            style={{
+              backgroundImage: `url(${currentScene.background})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
           >
-            <motion.div 
-              className="relative w-48 h-48"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <img 
-                src={currentScene.character.image} 
-                alt={currentScene.character.name}
-                className="w-full h-full object-cover rounded-lg shadow-lg"
-              />
-            </motion.div>
-
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold mb-4">{currentScene.character.name}</h3>
-              <p className="text-lg mb-6">{currentScene.character.dialogue}</p>
-              
-              <div className="flex flex-col gap-4">
-                <div className="flex gap-4 justify-end items-center">
-                  {currentScene.choices.map((choice, index) => (
-                    <button
-                      key={index}
-                      className="cinema-button"
-                      onClick={() => handleChoice(choice)}
-                      disabled={isGenerating || isListening}
-                    >
-                      {choice}
-                    </button>
-                  ))}
-                  <button
-                    className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                    onClick={isRecording ? stopVoiceInput : startVoiceInput}
-                    disabled={isGenerating || isListening}
-                  >
-                    {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                  </button>
-                </div>
-                
-                <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
-                  <input
-                    type="text"
-                    value={customChoice}
-                    onChange={(e) => setCustomChoice(e.target.value)}
-                    placeholder="Write your own choice..."
-                    className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
-                    disabled={isGenerating || isListening}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+            
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+              <motion.div 
+                className="cinema-card max-w-4xl mx-auto flex items-end gap-8"
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.div 
+                  className="relative w-48 h-48"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <img 
+                    src={currentScene.character.image} 
+                    alt={currentScene.character.name}
+                    className="w-full h-full object-cover rounded-lg shadow-lg"
                   />
-                  <button
-                    type="submit"
-                    className="cinema-button"
-                    disabled={isGenerating || isListening || !customChoice.trim()}
-                  >
-                    Make Choice
-                  </button>
-                </form>
-              </div>
+                </motion.div>
+
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold mb-4 text-white">{currentScene.character.name}</h3>
+                  <p className="text-lg mb-6 text-white">{currentScene.character.dialogue}</p>
+                  
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-4 justify-end items-center">
+                      {currentScene.choices.map((choice, index) => (
+                        <button
+                          key={index}
+                          className="cinema-button"
+                          onClick={() => handleChoice(choice)}
+                          disabled={isGenerating || isListening}
+                        >
+                          {choice}
+                        </button>
+                      ))}
+                      <button
+                        className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                        onClick={isRecording ? stopVoiceInput : startVoiceInput}
+                        disabled={isGenerating || isListening}
+                      >
+                        {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    
+                    <form onSubmit={handleCustomChoice} className="flex gap-4 justify-end">
+                      <input
+                        type="text"
+                        value={customChoice}
+                        onChange={(e) => setCustomChoice(e.target.value)}
+                        placeholder="Write your own choice..."
+                        className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                        disabled={isGenerating || isListening}
+                      />
+                      <button
+                        type="submit"
+                        className="cinema-button"
+                        disabled={isGenerating || isListening || !customChoice.trim()}
+                      >
+                        Make Choice
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
-      </div>
-    </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
