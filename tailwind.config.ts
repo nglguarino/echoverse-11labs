@@ -56,8 +56,10 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
-        serif: ["var(--font-serif)", ...fontFamily.serif],
+        sans: ["Inter", ...fontFamily.sans],
+        serif: ["Cinzel", ...fontFamily.serif],
+        cinzel: ["Cinzel", "serif"],
+        inter: ["Inter", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

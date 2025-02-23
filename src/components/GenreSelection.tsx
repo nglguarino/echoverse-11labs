@@ -14,7 +14,7 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden font-inter">
       <AnimatePresence mode="wait">
         {isStarting ? (
           <motion.div
@@ -49,9 +49,9 @@ const GenreSelection = ({ onSelect, isStarting }: GenreSelectionProps) => {
             className="text-center max-w-lg mx-auto p-8 relative z-10 -mt-32"
           >
             <motion.h1 
-              className="text-6xl md:text-7xl font-bold mb-6 text-center bg-clip-text text-transparent 
+              className="font-cinzel text-6xl md:text-7xl font-bold mb-6 text-center bg-clip-text text-transparent 
                          bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] to-[#1EAEDB] animate-text
-                         tracking-tight"
+                         tracking-wide"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
