@@ -15,7 +15,8 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
 
   const handleStart = () => {
     if (!isMuted && clickSoundRef.current) {
-      clickSoundRef.current.play();
+      clickSoundRef.current.currentTime = 0;
+      clickSoundRef.current.play().catch(error => console.log('Error playing click sound:', error));
     }
     const genres = ['action', 'thriller', 'romance'];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
@@ -24,8 +25,8 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
 
   const handleHover = () => {
     if (!isMuted && hoverSoundRef.current) {
-      hoverSoundRef.current.currentTime = 0; // Reset sound to start
-      hoverSoundRef.current.play();
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play().catch(error => console.log('Error playing hover sound:', error));
     }
   };
 
@@ -34,12 +35,12 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
   };
 
   useEffect(() => {
-    // Initialize audio with appropriate volumes
+    // Initialize audio with maximum volumes
     if (hoverSoundRef.current) {
-      hoverSoundRef.current.volume = 1.0; // Maximum volume for hover sound
+      hoverSoundRef.current.volume = 1.0;
     }
     if (clickSoundRef.current) {
-      clickSoundRef.current.volume = 1.0; // Maximum volume for click sound
+      clickSoundRef.current.volume = 1.0;
     }
   }, []);
 
@@ -47,12 +48,12 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
     <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden font-inter">
       <audio
         ref={hoverSoundRef}
-        src="/click-21156.mp3"
+        src="/hover-button-287656.mp3"
         preload="auto"
       />
       <audio
         ref={clickSoundRef}
-        src="/hover-button-287656.mp3"
+        src="/click-21156.mp3"
         preload="auto"
       />
 
