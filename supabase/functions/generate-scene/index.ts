@@ -72,11 +72,11 @@ async function detectLocationChange(prevScene: any, newScene: string): Promise<b
       messages: [
         {
           role: 'system',
-          content: 'You are a story analyzer that detects location changes in narrative scenes. Return only "true" if the location has significantly changed or "false" if it has not.'
+          content: 'You are an analyzer that detects explicit location changes in narrative scenes. Return "true" ONLY if both the character AND user explicitly agree to move to a new location (e.g. user choosing to "go to the park" and character saying "let\'s go to the park"). Return "false" for any other case, including mere mentions of other places without actual movement.'
         },
         {
           role: 'user',
-          content: `Previous scene: ${JSON.stringify(prevScene)}\nNew scene: ${newScene}\n\nHas the location changed significantly? Answer only with true or false.`
+          content: `Previous scene: ${JSON.stringify(prevScene)}\nNew scene: ${newScene}\n\nDid both the character and user explicitly agree to change location? Answer only with true or false.`
         }
       ],
     }),
@@ -84,7 +84,7 @@ async function detectLocationChange(prevScene: any, newScene: string): Promise<b
 
   const data = await openAIResponse.json();
   const result = data.choices[0].message.content.toLowerCase().trim() === 'true';
-  console.log('Location change detection result:', result);
+  console.log('Location change detection result:', result, 'based on explicit agreement between character and user');
   return result;
 }
 

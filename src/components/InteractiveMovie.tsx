@@ -57,15 +57,18 @@ const InteractiveMovie = () => {
         ...JSON.parse(data.scene)
       };
 
+      // Only set initial background for the very first scene
       if (!currentScene && !storyBackground) {
+        console.log('Setting initial background for first scene');
         setStoryBackground(newScene.background);
-      }
-      
-      if (data.locationChanged) {
-        console.log('Location has changed, updating background to:', newScene.background);
+      } else if (data.locationChanged) {
+        // Only update background if there was an explicit agreement to change location
+        console.log('Location change agreed upon, updating background to:', newScene.background);
         setStoryBackground(newScene.background);
-      } else if (storyBackground) {
-        newScene.background = storyBackground;
+      } else {
+        // Keep the current background for all other cases
+        console.log('No explicit location change, keeping current background:', storyBackground);
+        newScene.background = storyBackground || newScene.background;
       }
 
       if (!storyCharacter) {
