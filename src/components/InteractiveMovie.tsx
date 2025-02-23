@@ -338,7 +338,7 @@ const InteractiveMovie = () => {
                             {currentScene.choices.map((choice, index) => (
                               <button
                                 key={index}
-                                className="cinema-button"
+                                className="cinema-button text-white"
                                 onClick={() => handleChoice(choice)}
                                 disabled={isGenerating || isListening}
                               >
@@ -362,7 +362,7 @@ const InteractiveMovie = () => {
                             </button>
                             <button
                               onClick={handleCustomChoice}
-                              className="cinema-button whitespace-nowrap"
+                              className="cinema-button whitespace-nowrap text-white"
                               disabled={isGenerating || isListening || !customChoice.trim()}
                             >
                               Make Choice
