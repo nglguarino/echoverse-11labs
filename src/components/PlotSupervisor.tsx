@@ -187,7 +187,7 @@ export const PlotSupervisor = () => {
             exit={{ opacity: 0 }}
             className="flex-1 relative"
           >
-            {currentScene && (
+            {currentScene ? (
               <>
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
@@ -198,9 +198,9 @@ export const PlotSupervisor = () => {
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <div className="max-w-4xl mx-auto space-y-8">
                     <div className="flex gap-4 mb-6">
-                      {currentScene.characters.map((char, i) => (
+                      {currentScene.characters?.map((char, i) => (
                         <motion.div
-                          key={char.id}
+                          key={char.id || i}
                           initial={{ scale: 0.8, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: i * 0.2 }}
@@ -219,19 +219,19 @@ export const PlotSupervisor = () => {
                     </div>
 
                     <div className="space-y-4">
-                      {currentScene.characters.map((char) => (
+                      {currentScene.characters?.map((char, i) => (
                         <div 
-                          key={`${char.id}-dialogue`}
+                          key={`${char.id || i}-dialogue`}
                           className="bg-black/50 p-4 rounded-lg"
                         >
-                          <p className="text-lg">{char.dialogue[char.dialogue.length - 1]}</p>
+                          <p className="text-lg">{char.dialogue?.[char.dialogue.length - 1]}</p>
                         </div>
                       ))}
                     </div>
 
                     <div className="flex justify-between items-center">
                       <div className="flex gap-4">
-                        {currentScene.choices.map((choice, i) => (
+                        {currentScene.choices?.map((choice, i) => (
                           <Button
                             key={i}
                             onClick={() => {
@@ -257,6 +257,10 @@ export const PlotSupervisor = () => {
                   </div>
                 </div>
               </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              </div>
             )}
           </motion.div>
         )}
