@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMovieStore } from '@/stores/movieStore';
@@ -27,6 +26,7 @@ const InteractiveMovie = () => {
     setStoryCharacter,
     storyEnding,
     setStoryEnding,
+    hasShownEnding,
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
@@ -48,7 +48,8 @@ const InteractiveMovie = () => {
           currentScene,
           lastChoice: choice,
           storyCharacter,
-          currentBackground: storyBackground
+          currentBackground: storyBackground,
+          ignoreEnding: hasShownEnding
         }
       });
 
@@ -56,8 +57,8 @@ const InteractiveMovie = () => {
       
       console.log('Scene generation response:', data);
 
-      // Check for story ending
-      if (data.ending) {
+      // Only check for ending if we haven't shown one yet
+      if (data.ending && !hasShownEnding) {
         setStoryEnding(data.ending);
         return;
       }

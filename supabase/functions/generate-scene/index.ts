@@ -93,48 +93,50 @@ serve(async (req) => {
   }
 
   try {
-    const { genre, currentScene, lastChoice, storyCharacter, currentBackground } = await req.json()
+    const { genre, currentScene, lastChoice, storyCharacter, currentBackground, ignoreEnding } = await req.json()
 
-    // Check for ending conditions based on the last choice and current scene
-    const endingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an AI that determines if a story should end based on user choices and current scene context. 
-            Return JSON in this format if the story should end:
-            { "shouldEnd": true, "type": "success|game-over", "message": "explanation of what happened", "achievement": "optional achievement description" }
-            Or this format if it should continue:
-            { "shouldEnd": false }`
-          },
-          {
-            role: 'user',
-            content: `Current scene: ${JSON.stringify(currentScene)}\nUser's choice: ${lastChoice}\n\nShould this story end? Consider if the choice leads to quest completion or a game over situation.`
-          }
-        ],
-      }),
-    });
-
-    const endingData = await endingResponse.json();
-    const endingCheck = JSON.parse(endingData.choices[0].message.content);
-
-    if (endingCheck.shouldEnd) {
-      return new Response(
-        JSON.stringify({
-          ending: {
-            type: endingCheck.type,
-            message: endingCheck.message,
-            achievement: endingCheck.achievement
-          }
+    // Only check for ending if not ignoring endings
+    if (!ignoreEnding) {
+      const endingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an AI that determines if a story should end based on user choices and current scene context. 
+              Return JSON in this format if the story should end:
+              { "shouldEnd": true, "type": "success|game-over", "message": "explanation of what happened", "achievement": "optional achievement description" }
+              Or this format if it should continue:
+              { "shouldEnd": false }`
+            },
+            {
+              role: 'user',
+              content: `Current scene: ${JSON.stringify(currentScene)}\nUser's choice: ${lastChoice}\n\nShould this story end? Consider if the choice leads to quest completion or a game over situation.`
+            }
+          ],
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      });
+
+      const endingData = await endingResponse.json();
+      const endingCheck = JSON.parse(endingData.choices[0].message.content);
+
+      if (endingCheck.shouldEnd) {
+        return new Response(
+          JSON.stringify({
+            ending: {
+              type: endingCheck.type,
+              message: endingCheck.message,
+              achievement: endingCheck.achievement
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     const characterContext = storyCharacter 

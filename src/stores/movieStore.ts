@@ -27,6 +27,7 @@ interface MovieState {
   sceneHistory: Scene[];
   storyBackground: string | null;
   storyEnding: StoryEnding | null;
+  hasShownEnding: boolean;
   storyCharacter: {
     name: string;
     image: string;
@@ -49,6 +50,7 @@ export const useMovieStore = create<MovieState>((set) => ({
   sceneHistory: [],
   storyBackground: null,
   storyEnding: null,
+  hasShownEnding: false,
   storyCharacter: null,
   setGenre: (genre) => set({ genre }),
   setIsGenerating: (isGenerating) => set({ isGenerating }),
@@ -58,6 +60,9 @@ export const useMovieStore = create<MovieState>((set) => ({
   })),
   setStoryBackground: (background) => set({ storyBackground: background }),
   setStoryCharacter: (character) => set({ storyCharacter: character }),
-  setStoryEnding: (ending) => set({ storyEnding: ending }),
+  setStoryEnding: (ending) => set((state) => ({ 
+    storyEnding: ending,
+    hasShownEnding: true 
+  })),
   resetStoryEnding: () => set({ storyEnding: null }),
 }));
