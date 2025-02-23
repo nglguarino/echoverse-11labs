@@ -39,7 +39,7 @@ const InteractiveMovie = () => {
           currentScene,
           lastChoice: choice,
           storyCharacter,
-          currentBackground: storyBackground // Pass current background to help with location context
+          currentBackground: storyBackground
         }
       });
 
@@ -78,7 +78,14 @@ const InteractiveMovie = () => {
 
       const gender = storyCharacter?.gender || newScene.character.gender;
       console.log('Character gender for voice selection:', gender);
-      newScene.character.voiceId = gender === 'female' ? 'EXAVITQu4vr4xnSDxMaL' : '21m00Tcm4TlvDq8ikWAM';
+      // Set appropriate voice based on gender
+      if (gender === 'female') {
+        // Sarah's voice for female characters
+        newScene.character.voiceId = 'EXAVITQu4vr4xnSDxMaL';
+      } else {
+        // Josh's voice for male characters
+        newScene.character.voiceId = '21m00Tcm4TlvDq8ikWAM';
+      }
       console.log('Voice ID set to:', newScene.character.voiceId);
 
       if (currentScene) {
