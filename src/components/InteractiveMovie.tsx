@@ -333,17 +333,19 @@ const InteractiveMovie = () => {
                       <p className="text-lg text-white">{currentScene.character.dialogue}</p>
                       
                       <div className="flex flex-col gap-4">
-                        <div className="flex gap-4 justify-end items-center">
-                          {currentScene.choices.map((choice, index) => (
-                            <button
-                              key={index}
-                              className="cinema-button"
-                              onClick={() => handleChoice(choice)}
-                              disabled={isGenerating || isListening}
-                            >
-                              {choice}
-                            </button>
-                          ))}
+                        <div className="flex justify-end items-center">
+                          <div className="flex gap-4">
+                            {currentScene.choices.map((choice, index) => (
+                              <button
+                                key={index}
+                                className="cinema-button"
+                                onClick={() => handleChoice(choice)}
+                                disabled={isGenerating || isListening}
+                              >
+                                {choice}
+                              </button>
+                            ))}
+                          </div>
                           <div className="ml-4">
                             <button
                               className={`cinema-button p-2 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
@@ -355,22 +357,24 @@ const InteractiveMovie = () => {
                           </div>
                         </div>
                         
-                        <div className="flex gap-4 justify-end items-center pr-12">
-                          <input
-                            type="text"
-                            value={customChoice}
-                            onChange={(e) => setCustomChoice(e.target.value)}
-                            placeholder="Write your own choice..."
-                            className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
-                            disabled={isGenerating || isListening}
-                          />
-                          <button
-                            onClick={handleCustomChoice}
-                            className="cinema-button whitespace-nowrap"
-                            disabled={isGenerating || isListening || !customChoice.trim()}
-                          >
-                            Make Choice
-                          </button>
+                        <div className="flex justify-end items-center">
+                          <div className="flex gap-4">
+                            <input
+                              type="text"
+                              value={customChoice}
+                              onChange={(e) => setCustomChoice(e.target.value)}
+                              placeholder="Write your own choice..."
+                              className="bg-black/50 text-white px-4 py-2 rounded-lg border border-white/20 w-64"
+                              disabled={isGenerating || isListening}
+                            />
+                            <button
+                              onClick={handleCustomChoice}
+                              className="cinema-button whitespace-nowrap"
+                              disabled={isGenerating || isListening || !customChoice.trim()}
+                            >
+                              Make Choice
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
