@@ -42,15 +42,15 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
   };
 
   useEffect(() => {
-    // Initialize audio with low volume
+    // Initialize audio with appropriate volumes
     if (audioRef.current) {
-      audioRef.current.volume = 0.2;
+      audioRef.current.volume = 0.2; // Keep background music at a moderate level
     }
     if (hoverSoundRef.current) {
-      hoverSoundRef.current.volume = 0.15;
+      hoverSoundRef.current.volume = 1.0; // Maximum volume for hover sound
     }
     if (clickSoundRef.current) {
-      clickSoundRef.current.volume = 0.2;
+      clickSoundRef.current.volume = 1.0; // Maximum volume for click sound
     }
   }, []);
 
