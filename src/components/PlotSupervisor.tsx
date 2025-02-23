@@ -56,12 +56,12 @@ export const PlotSupervisor = () => {
           timestamp: Date.now()
         };
         addPlotEvent(event);
-        // Instead of modifying the scene directly, we'll use the proper movieStore method
+        // Instead of modifying the scene directly, we'll set an empty choices array
         if (currentScene) {
           const updatedScene = {
             ...currentScene,
             choices: [],
-            dialogue: [...(currentScene.dialogue || []), analysis.endReason]
+            isComplete: true
           };
           setCurrentScene(updatedScene);
         }
