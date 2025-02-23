@@ -15,7 +15,7 @@ const Index = () => {
   const showMovie = genre;
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <AnimatePresence mode="wait">
         {showGenreSelection ? (
           <motion.div
@@ -24,7 +24,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full"
+            className="w-full max-w-lg mx-auto"
           >
             <GenreSelection onSelect={handleGenreSelect} isStarting={false} />
           </motion.div>
@@ -35,7 +35,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full"
+            className="w-full max-w-2xl mx-auto"
           >
             <InteractiveMovie />
           </motion.div>

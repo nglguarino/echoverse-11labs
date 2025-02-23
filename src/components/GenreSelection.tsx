@@ -21,12 +21,12 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-center max-w-lg mx-auto p-8 relative z-10 -mt-32"
+        className="text-center w-full max-w-lg mx-auto p-4 sm:p-8 relative z-10 -mt-16 sm:-mt-32"
       >
         <motion.h1 
-          className="font-cinzel text-6xl md:text-7xl font-bold mb-6 text-center bg-clip-text text-transparent 
-                     bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] to-[#1EAEDB] animate-text
-                     tracking-wide"
+          className="font-cinzel text-4xl sm:text-6xl md:text-7xl font-bold mb-4 sm:mb-6 text-center 
+                     bg-clip-text text-transparent bg-gradient-to-r from-[#1EAEDB] via-[#9b87f5] 
+                     to-[#1EAEDB] animate-text tracking-wide"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -35,8 +35,8 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
         </motion.h1>
         
         <motion.p 
-          className="text-cinema-text/80 text-xl md:text-2xl text-center mb-32
-                     font-medium tracking-wide leading-relaxed"
+          className="text-cinema-text/80 text-lg sm:text-xl md:text-2xl text-center mb-16 sm:mb-32
+                     font-medium tracking-wide leading-relaxed px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
@@ -64,8 +64,8 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
             }}
           />
           <motion.button
-            className="relative px-10 py-5 text-xl rounded-lg text-white font-medium tracking-wide
-                       transition-all duration-300 transform hover:scale-105"
+            className="relative px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl rounded-lg text-white 
+                       font-medium tracking-wide transition-all duration-300 transform hover:scale-105"
             onClick={handleStart}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
