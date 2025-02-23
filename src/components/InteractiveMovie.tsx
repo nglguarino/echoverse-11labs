@@ -29,6 +29,7 @@ const InteractiveMovie = () => {
     storyEnding,
     setStoryEnding,
     hasShownEnding,
+    setGenre,
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
@@ -267,6 +268,7 @@ const InteractiveMovie = () => {
     setStoryBackground(null);
     setStoryCharacter(null);
     setStoryEnding(null);
+    setGenre(null);
     navigate('/');
   };
 
