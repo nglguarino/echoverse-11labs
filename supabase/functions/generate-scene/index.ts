@@ -1,4 +1,3 @@
-
 // @deno-types="https://raw.githubusercontent.com/denoland/deno/v1.37.2/cli/dts/lib.deno.fetch.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
@@ -90,13 +89,54 @@ async function detectLocationChange(prevScene: any, newScene: string): Promise<b
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { genre, currentScene, lastChoice, storyCharacter } = await req.json();
-    console.log('Received request with storyCharacter:', storyCharacter);
-    
+    const { genre, currentScene, lastChoice, storyCharacter, currentBackground } = await req.json()
+
+    // Check for ending conditions based on the last choice and current scene
+    const endingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI that determines if a story should end based on user choices and current scene context. 
+            Return JSON in this format if the story should end:
+            { "shouldEnd": true, "type": "success|game-over", "message": "explanation of what happened", "achievement": "optional achievement description" }
+            Or this format if it should continue:
+            { "shouldEnd": false }`
+          },
+          {
+            role: 'user',
+            content: `Current scene: ${JSON.stringify(currentScene)}\nUser's choice: ${lastChoice}\n\nShould this story end? Consider if the choice leads to quest completion or a game over situation.`
+          }
+        ],
+      }),
+    });
+
+    const endingData = await endingResponse.json();
+    const endingCheck = JSON.parse(endingData.choices[0].message.content);
+
+    if (endingCheck.shouldEnd) {
+      return new Response(
+        JSON.stringify({
+          ending: {
+            type: endingCheck.type,
+            message: endingCheck.message,
+            achievement: endingCheck.achievement
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const characterContext = storyCharacter 
       ? `Continue the story with ${storyCharacter.name}, who is a ${storyCharacter.gender} character. Keep their gender as ${storyCharacter.gender}.`
       : 'Create a new character for this story. Clearly specify if they are male or female.';
@@ -204,13 +244,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in generate-scene function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error('Error:', error)
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
   }
-});
+})

@@ -22,7 +22,9 @@ const InteractiveMovie = () => {
     storyBackground,
     setStoryBackground,
     storyCharacter,
-    setStoryCharacter
+    setStoryCharacter,
+    storyEnding,
+    setStoryEnding,
   } = useMovieStore();
   const [isListening, setIsListening] = useState(false);
   const [customChoice, setCustomChoice] = useState("");
@@ -51,6 +53,12 @@ const InteractiveMovie = () => {
       if (error) throw error;
       
       console.log('Scene generation response:', data);
+
+      // Check for story ending
+      if (data.ending) {
+        setStoryEnding(data.ending);
+        return;
+      }
       
       const newScene = {
         id: currentScene ? currentScene.id + 1 : 1,
@@ -298,6 +306,8 @@ const InteractiveMovie = () => {
         >
           <div className="text-white text-2xl">Generating your story...</div>
         </motion.div>
+      ) : storyEnding ? (
+        <StoryEnding key="ending" />
       ) : currentScene && (
         <motion.div 
           key="scene"

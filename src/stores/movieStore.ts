@@ -14,12 +14,19 @@ export interface Scene {
   choices: string[];
 }
 
+export type StoryEnding = {
+  type: 'success' | 'game-over';
+  message: string;
+  achievement?: string;
+}
+
 interface MovieState {
   genre: string | null;
   isGenerating: boolean;
   currentScene: Scene | null;
   sceneHistory: Scene[];
   storyBackground: string | null;
+  storyEnding: StoryEnding | null;
   storyCharacter: {
     name: string;
     image: string;
@@ -31,6 +38,8 @@ interface MovieState {
   addToHistory: (scene: Scene) => void;
   setStoryBackground: (background: string) => void;
   setStoryCharacter: (character: { name: string; image: string; gender: 'male' | 'female' }) => void;
+  setStoryEnding: (ending: StoryEnding) => void;
+  resetStoryEnding: () => void;
 }
 
 export const useMovieStore = create<MovieState>((set) => ({
@@ -39,6 +48,7 @@ export const useMovieStore = create<MovieState>((set) => ({
   currentScene: null,
   sceneHistory: [],
   storyBackground: null,
+  storyEnding: null,
   storyCharacter: null,
   setGenre: (genre) => set({ genre }),
   setIsGenerating: (isGenerating) => set({ isGenerating }),
@@ -48,4 +58,6 @@ export const useMovieStore = create<MovieState>((set) => ({
   })),
   setStoryBackground: (background) => set({ storyBackground: background }),
   setStoryCharacter: (character) => set({ storyCharacter: character }),
+  setStoryEnding: (ending) => set({ storyEnding: ending }),
+  resetStoryEnding: () => set({ storyEnding: null }),
 }));
