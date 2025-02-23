@@ -40,7 +40,7 @@ const GenreSelection = ({ onSelect }: GenreSelectionProps) => {
     <div className="fixed inset-0 flex items-center justify-center bg-cinema-background overflow-hidden font-inter">
       <audio
         ref={audioRef}
-        src="/ambient-cinematic.mp3"
+        src="/ambient-cinematic.wav"
         loop
         preload="auto"
       />
