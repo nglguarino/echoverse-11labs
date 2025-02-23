@@ -355,7 +355,7 @@ const InteractiveMovie = () => {
                           </div>
                         </div>
                         
-                        <div className="flex gap-4 justify-end items-center pr-[52px]">
+                        <div className="flex gap-4 justify-end items-center pr-12">
                           <input
                             type="text"
                             value={customChoice}
