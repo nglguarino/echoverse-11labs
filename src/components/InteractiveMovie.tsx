@@ -53,7 +53,7 @@ const InteractiveMovie = () => {
           lastChoice: choice,
           storyCharacter,
           currentBackground: storyBackground,
-          ignoreEnding: false // Changed from hasShownEnding to always check for endings
+          ignoreEnding: hasShownEnding // Use hasShownEnding to determine if we should ignore endings
         }
       });
 
@@ -61,7 +61,7 @@ const InteractiveMovie = () => {
       
       console.log('Scene generation response:', data);
 
-      if (data.ending) {
+      if (data.ending && !hasShownEnding) {
         console.log('Ending received:', data.ending);
         setStoryEnding(data.ending);
         return;

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export interface Scene {
@@ -64,5 +63,8 @@ export const useMovieStore = create<MovieState>((set) => ({
     storyEnding: ending,
     hasShownEnding: true 
   })),
-  resetStoryEnding: () => set({ storyEnding: null }),
+  resetStoryEnding: () => set({ 
+    storyEnding: null,
+    hasShownEnding: true
+  }),
 }));
