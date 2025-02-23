@@ -11,11 +11,11 @@ It was particluarly challenging to create the AI director logic, that has to: <b
 ## What it does:
 Echoverse is an AI-powered interactive storytelling app where you shape the narrative through your choices.
 
-What makes it special is that each scene is brought to life with:
-• An AI agent (or director) that creates every time different plots, settings, and characters
-• AI generated visuals (backgrounds and characters portraits)
-• Characters speaking with nuanced tones, thanks to ElevenLabs
-• Multiple ways to interact (text, voice, or choices)
+What makes it special is that each scene is brought to life with: <br>
+• An AI agent (or director) that creates every time different plots, settings, and characters <br>
+• AI generated visuals (backgrounds and characters portraits) <br>
+• Characters speaking with nuanced tones, thanks to ElevenLabs <br>
+• Multiple ways to interact (text, voice, or choices) <br>
 
 ## Tech stack:
 I built it entirely with Lovable, never had to open any IDE.
@@ -32,7 +32,7 @@ Framer Motion (Animations),
 Lucide React (Icons)
 
 State Management:
-Zustand (Application state) React Router (Navigation)
+Zustand (Application state), React Router (Navigation)
 
 Backend Services:
 Supabase
