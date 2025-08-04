@@ -193,7 +193,6 @@ npm run dev
 - [ ] **Emotional State Tracking**: Add character mood systems
 - [ ] **Background Music Engine**: Dynamic soundtrack generation
 - [ ] **Advanced Memory Systems**: Long-term plot callbacks and references
-- [ ] **Multiplayer Narratives**: Collaborative story experiences
 
 ## 🏗️ Architecture Highlights
 
