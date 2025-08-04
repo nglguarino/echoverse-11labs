@@ -7,11 +7,11 @@ An immersive, AI-powered interactive storytelling application where your choices
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-412991?logo=openai)
 
-## 🌟 Overview
+## Overview
 
 Echoverse implements an **autonomous AI director** that creates unique, adaptive narratives in real-time. Unlike traditional branching stories, every playthrough is genuinely unique, with AI agents managing plot progression, character development, and world-building dynamically.
 
-## 🤖 The AI Director Architecture
+## 🎥 The AI Director Architecture
 
 ### Core Agent Responsibilities
 
@@ -195,13 +195,6 @@ npm run dev
 - [ ] **Advanced Memory Systems**: Long-term plot callbacks and references
 - [ ] **Multiplayer Narratives**: Collaborative story experiences
 
-### AI Director Enhancements
-- [ ] **Narrative Style Adaptation**: Learn from player preferences
-- [ ] **Procedural Quest Generation**: Create multi-scene story arcs
-- [ ] **Character Relationship Dynamics**: Track evolving relationships
-- [ ] **Environmental Storytelling**: Use settings to convey narrative
-- [ ] **Branching Timeline Support**: Enable save states and alternate paths
-
 ## 🏗️ Architecture Highlights
 
 1. **Contextual Prompt Engineering**: Carefully crafted prompts maintain consistency
@@ -217,4 +210,5 @@ MIT License - see [LICENSE](LICENSE) file for details
 ## 🙏 Acknowledgments
 
 - Inspired by "Choose Your Own Adventure" books
+- Built for the a16z x ElevenLabs Worldwide Hackathon
 - Built with [Lovable](https://lovable.dev) for rapid development
